@@ -1,0 +1,2 @@
+**Filesystems** act as an intermediary layer between the OS and storage, providing the structure for how data (files, images, etc.) is stored. They manage the logical organization of data by creating paths, finding available space, and determining where to store data on the storage device.
+<br>**Storage** itself is the persistent medium where data resides, and it works in conjunction with the filesystem to ensure data is organized, stored securely, accessible for sharing, and recoverable.
