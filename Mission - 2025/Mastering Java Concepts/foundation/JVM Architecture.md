@@ -53,14 +53,21 @@ Then, the original ClassLoader (Application Loader in this case) will try to loa
 
 ![img_1.png](img_1.png)
 
-### 2. Linking:
+**2. Linking:** After the bytecode is loaded into the memory area, in this phase it will check the structure and further allocating the values to static variables. It has 3 components:
 
 **Verification:** Checks bytecode for structural correctness and safety.
 
-**Preparation:**
-Allocates memory and sets default values for static fields.(e.g., 0 for int, null for objects, false for boolean)
+**Preparation:** Allocates memory and sets default values for static fields (e.g., 0 for int, null for objects, false for boolean).
 
-**Resolution:** Replaces symbolic references with direct ones.
+**Resolution: ** Replaces symbolic references with direct references (lazy resolution - happens when first accessed).
+
+      Before Resolution (Symbolic References):
+      java/lang/String (class reference)
+      java/lang/System.out:Ljava/io/PrintStream; (field reference)
+
+      After Resolution (Direct References):
+      Direct pointer to String class metadata
+      Direct memory offset to System.out field
 
 ### 3. Initialization
 Executes static initializers and static blocks, assigning actual values to static fields.
