@@ -53,7 +53,8 @@ Then, the original ClassLoader (Application Loader in this case) will try to loa
 
 ![img_1.png](img_1.png)
 
-**2. Linking:** After the bytecode is loaded into the memory area, in this phase it will check the structure and further allocating the values to static variables. It has 3 components:
+### **2. Linking:**
+After the bytecode is loaded into the memory area, in this phase it will check the structure and further allocating the values to static variables. It has 3 components:
 
 **Verification:** Checks bytecode for structural correctness and safety.
 
@@ -173,16 +174,107 @@ JVM divides memory into various runtime data areas, each with a specific functio
 - **Method Area**:  
   Stores class structures like metadata, static variables, method bytecode, and constant pool. Shared among all threads.
 
-- **Heap**:  
-  Used for dynamic memory allocation for Java objects and JRE classes at runtime. All objects are created here and shared across threads. Subject to garbage collection.
+# Heap Memory
 
-- **Stack**:  
-  Each thread has its own stack, storing method call frames, local variables, and partial results. Stack memory is not shared.
+Heap space is used for dynamic memory allocation of Java objects and classes at runtime. New objects are always created in the heap space, and references to these objects are typically stored in the stack memory for local variables, or in the method area for static variables. Native code may also access heap objects via JNI. The heap has global access, and objects can be referenced from anywhere in the application.
 
-- **Program Counter (PC) Register**:  
+## Key Characteristics of Heap Memory
+
+- **Dynamic Allocation**: Memory allocation on the heap is more flexible and doesn't follow strict LIFO ordering
+- **Global Scope**: Objects on the heap are accessible from anywhere in the program
+- **Larger Size**: The size of heap memory is large and determined by available system memory
+- **Slower Access**: Accessing data on the heap is relatively slower compared to stack due to traversing references
+- **Manual Management**: Memory is allocated and deallocated through Java's automatic garbage collection system
+
+## Heap Memory Regions
+Heap Memory is divided into several regions:
+
+Whenever a new object is created, it is allocated in the Eden space of the Young Generation.
+
+When Eden fills up, a Minor GC is triggered. During this GC:
+- Unreferenced objects in Eden and the active Survivor space are removed.
+- Surviving objects are copied to the other Survivor space (S0 or S1).
+
+In subsequent Minor GCs:
+- The roles of S0 and S1 alternate (from ↔ to).
+- Objects that survive each GC have their **age incremented**.
+- Once an object survives enough GC cycles, it is **promoted to the Old Generation**.
+- Before Java 9, PermGen (Permanent Generation was exists but it's removed in new releases).
+
+The Old Generation is cleaned up by **Major GC** (also called Full GC), which runs **less frequently** and may cause longer pauses.
+![img_11.png](img_11.png)
+
+## - **Stack**:
+
+  Stack Memory is a special region where the JVM keeps track of method execution. It employs Static Memory Allocation and stores function calls, method-specific primitive data, and object references. The stack memory is dynamically allocated to each thread during runtime.
+
+#### Key Characteristics of Stack Memory
+
+**LIFO Operation:** Stack operates on a Last-In-First-Out (LIFO) principle, meaning the most recently called method is the first one to return
+    
+**Thread-Specific:** Each thread in the JVM has a dedicated stack, making it thread-safe as data can only be accessed by the owning thread
+    
+**Fast Access:** Accessing data on the stack is exceptionally fast because it involves simple pointer manipulation
+    
+**Fixed Size:** Stack has a finite size determined by the system or JVM configuration
+    
+**Automatic Management:** Memory is automatically managed by the JVM - when a method returns, its stack frame is immediately deallocated
+
+### What Stack Memory Stores
+
+**Method call frames:** Each method call gets its own stack frame
+
+**Local variables:** Method-specific primitive values
+
+**Method parameters:** Arguments passed to methods
+
+**Return addresses:** Where control should return after method execution
+
+**References to objects:** Pointers to objects stored in heap memory
+
+##### Stack Frame Structure
+
+When a method is called, a new block (called a stack frame) is added to the top of the stack. 
+
+This stack frame contains:
+
+* Local variables declared within the method
+* Method parameters
+* Return address for the calling method 
+* Operand stack for intermediate calculations
+    
+##### Stack Memory Example
+
+```java
+public class StackExample {
+    public static void main(String[] args) {
+        int a = 10;        // Stored in stack
+        int b = 20;        // Stored in stack
+        int sum = add(a, b); // Method call creates new stack frame
+    }
+    
+    public static int add(int x, int y) {
+        int result = x + y;  // Local variables stored in stack
+        return result;       // Stack frame removed after return
+    }
+}
+
+```
+
+#### StackOverflowError
+
+When insufficient space exists to create new objects, the system raises a java.lang.StackOverFlowError. This typically occurs due to:
+
+* Infinite recursion
+* Deep method call chains
+* Excessive local variable declarations
+
+--------------------------- STACK ---------------------------
+
+**Program Counter (PC) Register**:  
   Each thread has a PC register that contains the address of the current instruction being executed.
 
-- **Native Method Stack**:  
+**Native Method Stack**:  
   Used for native methods (methods written in languages like C/C++ and called from Java code via JNI).
 
 **Diagram for reference:**
@@ -213,7 +305,145 @@ The Execution Engine is responsible for executing the bytecode loaded by the cla
 - **JIT (Just-In-Time) Compiler**:  
   To improve performance, the JVM uses a JIT compiler. When the JVM detects that certain code is run frequently ("hot spots"), it compiles those bytecode sections into native machine code at runtime. This compiled code is then executed directly, making execution much faster. The JIT compiler balances between startup speed (using interpreter) and long-term performance (compiling hot code).
 
-- **Garbage Collector**:  
-  Automatically frees memory by cleaning up objects that are no longer referenced.
+## Garbage Collection
+
+Garbage Collection (GC) in Java is the process of automatically identifying and removing objects that are no longer referenced, to reclaim memory. This ensures efficient memory management without requiring manual memory deallocation like in C/C++.
+
+
+## 🎯 Why GC is Important
+
+- Prevents memory leaks
+- Avoids `OutOfMemoryError`
+- Automates memory cleanup
+- Improves performance when tuned correctly
+
+---
+
+## 🧱 Key Concepts
+
+- **Heap**: Where all Java objects are stored.
+- **Young Generation**: Where new objects are created (Eden + Survivor Spaces).
+- **Old Generation**: Where long-lived objects are promoted.
+- **Minor GC**: Cleans up the Young Generation.
+- **Major/Full GC**: Cleans the entire heap (Old + Young).
+- **Promotion**: Long-lived objects are moved from Young to Old Gen.
+- **Stop-the-World**: All application threads pause during GC.
+
+---
+
+## 🧪 GC Algorithms in Java
+
+### 1. 🚀 Serial GC (`-XX:+UseSerialGC`)
+- **How it works**: Single-threaded GC for all generations.
+- **Best for**: Small applications, embedded devices, low-memory environments.
+- **Pros**:
+    - Simple and low overhead.
+    - Predictable behavior.
+- **Cons**:
+    - Pauses all threads.
+    - Poor performance in multi-threaded or large applications.
+
+---
+
+### 2. ⚡ Parallel GC (`-XX:+UseParallelGC`)
+- **How it works**: Uses multiple threads for Minor and Major GC.
+- **Best for**: High-throughput apps, batch processing, backend systems.
+- **Pros**:
+    - High throughput.
+    - Shorter GC time than Serial.
+- **Cons**:
+    - Still uses stop-the-world pauses.
+    - Not ideal for latency-sensitive systems.
+
+---
+
+### 3. 🔄 CMS - Concurrent Mark-Sweep (`-XX:+UseConcMarkSweepGC`) *(Deprecated in Java 9, removed in Java 14)*
+- **How it works**: Concurrently marks and sweeps unreferenced objects in Old Gen.
+- **Best for**: Low-latency systems (e.g., UIs, trading systems).
+- **Pros**:
+    - Short pause times.
+    - Runs concurrently with the app.
+- **Cons**:
+    - Fragmentation in Old Gen.
+    - More CPU usage.
+    - Deprecated — replaced by G1 and ZGC.
+
+---
+
+### 4. 🎯 G1 GC - Garbage First (`-XX:+UseG1GC`) *(Default from Java 9)*
+- **How it works**: Divides heap into regions and collects garbage in parallel & incrementally.
+- **Best for**: Large applications with moderate latency requirements.
+- **Pros**:
+    - Balanced throughput and pause time.
+    - Compacts memory to avoid fragmentation.
+    - Predictable pause time with `-XX:MaxGCPauseMillis`.
+- **Cons**:
+    - Slightly higher overhead than CMS/Parallel GC.
+    - Complex tuning.
+
+---
+
+### 5. 🧊 ZGC - Z Garbage Collector (`-XX:+UseZGC`)
+- **How it works**: Scalable, low-latency collector using region-based heap and colored pointers.
+- **Best for**: Large memory, low-latency apps (e.g., real-time systems).
+- **Pros**:
+    - Pause times < 10ms, regardless of heap size.
+    - Scales to multi-terabyte heaps.
+- **Cons**:
+    - Higher memory footprint.
+    - Newer; not supported in older JVM versions (Java 11+).
+
+---
+
+### 6. ☄️ Shenandoah (`-XX:+UseShenandoahGC`)
+- **How it works**: Concurrent compaction GC that reduces pause times.
+- **Best for**: Ultra-low pause systems.
+- **Pros**:
+    - Very short pause times.
+    - Concurrent defragmentation.
+- **Cons**:
+    - More CPU usage.
+    - Newer GC; not yet default anywhere.
+
+---
+
+## 🧠 Things to Know
+
+- **GC Tuning**: Choose GC type based on app needs (throughput vs latency).
+- **JVM Options**:
+  ```bash
+  -XX:+UseG1GC
+  -XX:+UseParallelGC
+  -XX:+UseZGC
+  -XX:MaxGCPauseMillis=200
+  -Xms / -Xmx for heap sizing
+  -XX:SurvivorRatio
+  -XX:NewRatio
+
+**Profiling Tools:**
+
+* jvisualvm
+* jstat, jmap, jcmd
+* Java Flight Recorder (JFR)
+* GC logs (-Xlog:gc*)
+
+![img_12.png](img_12.png)
+
+#### 📌 Summary
+
+* GC is essential for automatic memory management in Java.
+* Different GC algorithms suit different application types.
+* You must select and tune GC before starting the JVM.
+* G1 GC is the default from Java 9 onwards.
+* For ultra-low latency, consider ZGC or Shenandoah.
+
+### Heap Memory Configuration
+Heap will be allocated based on CPU cores, available RAM and OS architecture.
+You can configure heap memory size using JVM options:
+
+- `-Xms`: Initial heap size
+- `-Xmx`: Maximum heap size
+- `-Xss`: Stack size per thread
+
 
 ---
