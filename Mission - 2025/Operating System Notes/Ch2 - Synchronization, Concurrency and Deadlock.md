@@ -3,7 +3,7 @@
 #### Synchronization
 
 * To achieve Synchronisation, we can do it using Monitor or Spin locks.<br>
-* Maximum Deadlock might be occurred compare to parallelism, if the synchronization is not properly handled. But if the parallel process requires synchronization, then deadlock might occur. Simply deadlock will occur only for synchronization concepts.<br>
+* Deadlocks usually occur in multithreaded applications when synchronization is not handled properly. While parallel execution by itself doesn’t cause deadlocks, if multiple threads compete for shared resources and use synchronization, improper locking can lead to a deadlock. In short, deadlocks only arise when synchronization mechanisms are involved.<br>
 * Monitor contains Mutex and Conditional check as internal mechanism, also semaphore will be used by the OS (and programmers) to signal one thread to another about resource availability and related events, and for managing waiting (awaiting) threads.<br>
 * When we talk about synchronization, we need to understand below things<br>
 
