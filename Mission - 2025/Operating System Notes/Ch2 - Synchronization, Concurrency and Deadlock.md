@@ -4,7 +4,7 @@
 
 * To achieve Synchronisation, we can do it using Monitor or Spin locks.<br>
 * Deadlocks usually occur in multithreaded applications when synchronization is not handled properly. While parallel execution by itself doesn’t cause deadlocks, if multiple threads compete for shared resources and use synchronization, improper locking can lead to a deadlock. In short, deadlocks only arise when synchronization mechanisms are involved.<br>
-* This only happens when some form of lock or monitor (like synchronized, ReentrantLock, etc.) is involved.<br>
+* Deadlocks only happens when some form of lock or monitor (like synchronized, ReentrantLock, etc.) is involved.<br>
 * Monitor contains Mutex and Conditional check as internal mechanism, also semaphore will be used by the OS (and programmers) to signal one thread to another about resource availability and related events, and for managing waiting (awaiting) threads.<br>
 * When we talk about synchronization, we need to understand below things<br>
 
