@@ -1,5 +1,5 @@
 # 🔐 ReentrantLock in Java
-
+### 28-07-2025,29-07-2025
 `ReentrantLock` is a lock class available in the `java.util.concurrent.locks` package. It provides explicit locking mechanisms with advanced features over the traditional `synchronized` keyword.
 
 ## What does "Reentrant" mean?
@@ -192,3 +192,68 @@ To avoid this, always release the read lock before acquiring the write lock if y
 
 > ✅ Use `synchronized` for simple cases.  
 > 🔧 Use `Lock` when you need timed waits, fairness, interruptibility, or complex coordination.
+
+# StampedLock
+
+StampedLock is designed for high-performance, read-heavy scenarios.
+It introduces optimistic and pessimistic (read below) locking mechanisms to reduce contention(read below) and increase throughput.
+
+Unlike ReentrantLock, StampedLock is not reentrant — this means:
+
+- If a thread holding a lock (read/write) tries to acquire it again, it can lead to deadlock or blocking, because the lock system does not track ownership per thread.
+- Therefore, lock acquisition must be handled carefully, especially in nested or recursive methods.
+
+🔁 Reentrancy is intentionally avoided in StampedLock to improve performance and reduce overhead.
+---
+# Understand different locking mechanisms
+
+## 🔄 Contention, Optimistic Lock, and Pessimistic Lock
+
+## 🔁 Contention
+
+**Contention** occurs when **multiple threads try to access the same shared resource** (like a variable, file, or database record) **at the same time**.
+
+- High contention leads to performance bottlenecks due to frequent locking, waiting, or blocking.
+- Example: Two threads trying to write to the same memory location simultaneously.
+
+---
+
+## 🔐 Pessimistic Locking
+
+Pessimistic Locking assumes **conflicts will likely happen**, so it **locks the resource early** to avoid inconsistency.
+
+- Thread **locks** the resource before reading or writing.
+- Other threads **must wait** until the lock is released.
+- Guarantees thread safety, but may reduce performance under low contention.
+
+🧠 Example:  
+Using `synchronized` or `ReentrantLock` — a thread locks the resource even if no one else is accessing it.
+
+---
+
+## 💡 Optimistic Locking
+
+Optimistic Locking assumes **conflicts are rare**, so threads **access the resource without locking initially**.
+
+- It **verifies later** if a conflict occurred.
+- If there’s no conflict → proceed.
+- If there’s a conflict → retry or rollback changes.
+
+Commonly used in:
+- `StampedLock.tryOptimisticRead()` in Java
+- Versioning systems in databases or JPA
+
+🧠 Example:  
+A thread reads data without locking. Before writing, it checks if data has changed during the read. If so, it retries.
+
+---
+
+## 🔁 Summary Table
+
+| Feature             | Pessimistic Locking       | Optimistic Locking        |
+|--------------------|---------------------------|---------------------------|
+| Assumes conflict?  | Yes                       | No                        |
+| Locks resource?    | Before access             | After verifying conflict  |
+| Performance        | Lower under low contention| Higher under low contention |
+| Risk               | Thread blocking           | Retry on failure          |
+

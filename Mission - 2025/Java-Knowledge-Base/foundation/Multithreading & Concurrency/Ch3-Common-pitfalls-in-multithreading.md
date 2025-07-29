@@ -1,4 +1,5 @@
 ## ⚠️ List of Common Pitfalls in Multithreading
+### 27-07-2025
 
 Below are common issues faced in multithreaded programming. These can lead to performance degradation, bugs, or application crashes.
 
