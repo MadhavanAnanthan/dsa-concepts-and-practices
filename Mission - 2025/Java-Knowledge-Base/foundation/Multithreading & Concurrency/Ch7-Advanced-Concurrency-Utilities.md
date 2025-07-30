@@ -174,7 +174,7 @@ class EventNotifier {
 
 #### Semaphore Example - Restaurant with Limited Tables:
 
-```java
+```
 import java.util.concurrent.Semaphore;
 
 class Restaurant {
@@ -214,7 +214,7 @@ for (int i = 1; i <= 5; i++) {
 
 #### Fair Semaphores:
 
-```java
+```
 Semaphore fairSemaphore = new Semaphore(3, true); // Fair semaphore - FIFO order
 ```
 
@@ -225,7 +225,7 @@ Semaphore fairSemaphore = new Semaphore(3, true); // Fair semaphore - FIFO order
 
 #### CountDownLatch Example - Waiting for Workers:
 
-```java
+```
 import java.util.concurrent.CountDownLatch;
 
 class Worker extends Thread {
@@ -278,7 +278,7 @@ System.out.println("All workers completed! Main thread continues...");
 
 #### CyclicBarrier Example - Race Start:
 
-```java
+```
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.BrokenBarrierException;
 

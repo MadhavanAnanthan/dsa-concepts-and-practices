@@ -202,6 +202,6 @@ interface InvalidInterface {
 <p>We witnessed how lambda functions can be used to work with collections, perform event handling, and simplify threading and concurrency. Additionally, we learned about lambda's type inference and its limitations, ensuring that lambda functions are stateless and adhere to the functional programming paradigm.</p>
 
 Refer: 
-[Syntx of Lambda Expressions](Ch1.1%20Syntax%20of%20Lambda%20Expression.md)<br>
+[Syntx of Lambda Expressions](Ch1.1 Syntax of Lambda Expression.md)<br>
 [Functional Interfaces](Ch2%20-%20(Day2)%20Functional%20Interfaces.md)<br>
 [Benefits of Lambda Functions](Ch1.2%20Benefits%20of%20Lambda%20Functions.md)
