@@ -170,7 +170,18 @@ class EventNotifier {
 
 ### Semaphores
 
-**Semaphores control the number of threads that can access a resource simultaneously**[^7]. Unlike synchronized blocks that allow only one thread, semaphores allow N threads.
+- Semaphore is used to overcome the limitation of the `synchronized` keyword.
+- It allows a defined number of threads to run concurrently.
+- It has an internal counter to maintain the number of threads allowed.
+- For example, if we mention 3 threads, Semaphore will allow 3 threads at a time.
+- Every time `acquire()` is called, it decrements the counter by 1.
+- Every time `release()` is called, it increments the counter by 1.
+- If we set 1 thread to allow:
+    - After `acquire()`, counter becomes 0 (no more threads allowed).
+    - After `release()`, counter becomes 1 again.
+- It acts like a control gate based on the defined thread limit.
+- ✅ It is thread-safe mainly for maintaining the internal count properly, even when multiple threads call `acquire()` and `release()` concurrently.
+e is used to overcome the problem in syncrhonised keyword, semaphore will allow defined threads concurrently. it has a counter to maintain the number of threads to allow, if we mention 3 threads, semaphore will 3 threads also it maintains the proper count, like everytime it acquires it decrement to one number, if it call acquires method it will incrment the counter. so if we set 1 thread to allow, so if it called acquire it should be 0, then it calls release it should be 1 again. similarly it will maintain control gate to allow the number of threads based on defined.
 
 #### Semaphore Example - Restaurant with Limited Tables:
 
@@ -536,16 +547,16 @@ atomicInt.accumulateAndGet(5, Integer::sum); // Add 5 to current value
 
 ### When to Use Each Utility:
 
-| Utility | Best Use Case | Performance Notes |
-| :-- | :-- | :-- |
-| **BlockingQueue** | Producer-consumer patterns | Moderate overhead due to blocking |
-| **ConcurrentHashMap** | High-concurrency map operations | Excellent read performance |
-| **CopyOnWriteArrayList** | Read-heavy, write-light scenarios | Expensive writes, very fast reads |
-| **Semaphore** | Resource pooling | Low overhead |
-| **CountDownLatch** | One-time coordination | Very low overhead |
-| **CyclicBarrier** | Repeated phase synchronization | Moderate overhead |
-| **Phaser** | Complex multi-phase coordination | Higher overhead but more flexible |
-| **AtomicInteger/Reference** | Simple counters and flags | Highest performance, lock-free |
+| Utility | Best Use Case                                       | Performance Notes |
+| :-- |:----------------------------------------------------| :-- |
+| **BlockingQueue** | Producer-consumer patterns                          | Moderate overhead due to blocking |
+| **ConcurrentHashMap** | High-concurrency map operations                     | Excellent read performance |
+| **CopyOnWriteArrayList** | Read-heavy, write-light scenarios                   | Expensive writes, very fast reads |
+| **Semaphore** | only a fixed number of requests/threads to access a resource                                    | Low overhead |
+| **CountDownLatch** | Used to wait for another set of threads to complete | Very low overhead |
+| **CyclicBarrier** | used so that all threads wait at a common point                      | Moderate overhead |
+| **Phaser** | Complex multi-phase coordination                    | Higher overhead but more flexible |
+| **AtomicInteger/Reference** | Simple counters and flags                           | Highest performance, lock-free |
 
 ### Performance Tips:
 

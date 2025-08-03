@@ -163,3 +163,4 @@ Java provides a powerful set of tools to build multithreaded and concurrent appl
 - Use the `ExecutorService`, `Callable`, and `Future` for managed concurrency.
 - Apply advanced synchronization using locks, semaphores, and atomic variables.
 - Prefer thread-safe collections and design for immutability when possible.
+

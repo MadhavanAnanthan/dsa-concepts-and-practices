@@ -125,6 +125,7 @@ The following is a classic **Producer-Consumer** example that demonstrates the u
 - It uses a shared **monitor lock (via the class object)** to ensure thread-safe access.
 - **`synchronized` blocks** manage mutual exclusion.
 - **`wait()` and `notify()`** methods facilitate **inter-thread communication**, allowing one thread to wait for a condition while another signals when the condition is met.
+- `join()` used to inform to main thread to wait till the thread execution finishes. Ex- thread1.join() - main thread will wait to complete thread1. 
 
 This example helps visualize how threads can coordinate with each other to produce a desired and predictable behavior in concurrent environments.
 
