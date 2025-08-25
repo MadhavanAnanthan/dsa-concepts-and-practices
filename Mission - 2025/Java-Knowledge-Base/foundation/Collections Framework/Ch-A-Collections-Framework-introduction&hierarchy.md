@@ -1,4 +1,4 @@
-
+1
 ## Java Collections Framework (Essentials \& Hierarchy)
 
 The Java Collections Framework (JCF) revolutionized data handling in Java after its introduction in
