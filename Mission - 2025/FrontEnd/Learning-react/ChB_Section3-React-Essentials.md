@@ -130,8 +130,7 @@ import imgA from './assets/imgA.png';
 
 - **Props** (properties) are read-only inputs passed to a component for configuration, similar to function arguments.[^3][^1][^2]
 - Props enable **reusability** by allowing components to behave differently depending on the passed values.
-
-
+- When you pass values to a component (e.g. <Button label="Click me" />), those values are accessible inside the component as props.label.
 #### Main Usage Example
 
 ```jsx
@@ -227,3 +226,22 @@ function App() {
 ```
 
 - Destructuring in the component simplifies prop usage.
+
+props.children
+
+- Every component automatically receives a special prop called children.
+- It represents the content that is nested inside the component’s opening and closing tags.
+
+Example:
+
+```
+function Wrapper(props) {
+  return <div className="wrapper">{props.children}</div>;
+}
+// Usage:
+<Wrapper>
+  <h1>Hello</h1>
+  <p>This is inside wrapper</p>
+</Wrapper>
+```
+So unlike normal props (where you explicitly pass values via attributes), children is for passing JSX/content directly inside the component.
