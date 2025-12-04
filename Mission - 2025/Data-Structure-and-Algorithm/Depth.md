@@ -1,17 +1,17 @@
 Two Pointers
    ├── Opposite Ends (Bidirectional)
-   │     ├── Pair Sum / Two Sum (Sorted)
+   │     ├── Pair Sum / Two Sum (Sorted)--
    │     ├── Triplets (3-Sum)
    │     ├── Quadruplets (4-Sum)
    │     ├── K-Sum (Generalized using recursion)
    │     ├── Closest Sum
    │     ├── Max Area / Container With Most Water
    │     ├── Trapping Rain Water (Two pointers approach)
-   │     ├── Reverse Array / String
-   │     ├── Check Palindrome
-   │     ├── Valid Palindrome II (remove a char)
+   │     ├── Reverse Array / String--
+   │     ├── Check Palindrome--
+   │     ├── Valid Palindrome II (remove a char)--
    │     ├── Compare Strings (skip spaces, punctuation)
-   │     ├── Merge Two Sorted Arrays (from end)
+   │     ├── Merge Two Sorted Arrays (from end)--
    │     └── Dutch National Flag (variant)
    │
    ├── Same Direction (Forward Only)
