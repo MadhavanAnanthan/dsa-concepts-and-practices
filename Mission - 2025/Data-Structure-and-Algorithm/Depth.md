@@ -1,10 +1,10 @@
 Two Pointers
    ├── Opposite Ends (Bidirectional)
    │     ├── Pair Sum / Two Sum (Sorted)--
-   │     ├── Triplets (3-Sum)
+   │     ├── Triplets (3-Sum)--
    │     ├── Quadruplets (4-Sum)
    │     ├── K-Sum (Generalized using recursion)
-   │     ├── Closest Sum
+   │     ├── Closest Sum--same as 3 sum
    │     ├── Max Area / Container With Most Water
    │     ├── Trapping Rain Water (Two pointers approach)
    │     ├── Reverse Array / String--
