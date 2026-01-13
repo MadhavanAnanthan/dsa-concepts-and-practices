@@ -1,0 +1,243 @@
+# AZ-204 (Azure Developer Associate) – A to Z Study Plan
+**Target Exam:** March 2026  
+**Study End Date:** Feb 28, 2026  
+**Daily Commitment:** 1 hour/day  
+**Goal:** Learn Azure developer concepts deeply (not just pass the exam)
+
+---
+
+## Study Principles
+
+- Follow **Microsoft Learn** as the primary source
+- Use **Azure Docs selectively** (only exam-relevant sections)
+- Use **AI for clarification**, not as a syllabus
+- Avoid admin-heavy or non-AZ-204 topics
+- Certification should be a **by-product of real understanding**
+
+---
+
+## Timeline Overview
+
+| Phase | Duration | Focus |
+|------|--------|------|
+| Phase 1 | Weeks 1–4 | Azure Compute |
+| Phase 2 | Weeks 5–8 | Azure Storage |
+| Phase 3 | Weeks 9–12 | Security |
+| Phase 4 | Weeks 13–15 | Integration & Messaging |
+| Phase 5 | Weeks 16–18 | Monitoring & Optimization |
+| Phase 6 | Weeks 19–20 | Exam Readiness |
+
+Total Duration: ~20 weeks (~5 months)
+
+---
+
+## Phase 1: Develop Azure Compute Solutions (Weeks 1–4)
+**(AZ-204 weight: ~25–30%)**
+
+### Week 1: Azure Core (Developer Perspective)
+- Azure subscriptions & resource groups
+- Regions & availability
+- Azure Portal vs CLI vs ARM (conceptual)
+- Cost basics (why cost increases)
+
+**Outcome:** Understand how Azure organizes and bills resources
+
+---
+
+### Week 2: Azure Compute Options
+- App Service (Web Apps)
+- Azure Functions (Consumption vs Premium)
+- Containers overview (ACI, Container Apps)
+- When to use which compute
+
+**Outcome:** Correct compute choice during system design
+
+---
+
+### Week 3: Azure App Service (Deep Dive)
+- App Service plans
+- Scaling (manual vs autoscale)
+- Deployment slots
+- Configuration & environment variables
+- JVM memory considerations
+
+**Outcome:** Deploy and scale Java/Spring apps correctly
+
+---
+
+### Week 4: Azure Functions (Deep Dive)
+- Triggers & bindings
+- Stateless execution
+- Cold start behavior
+- Timeout & execution limits
+- Real-world use cases
+
+**Outcome:** Use Functions appropriately (not misuse)
+
+---
+
+## Phase 2: Develop for Azure Storage (Weeks 5–8)
+**(AZ-204 weight: ~15–20%)**
+
+### Week 5: Azure Storage Fundamentals
+- Storage accounts
+- Blob vs Queue vs Table vs File
+- Performance tiers & pricing
+
+---
+
+### Week 6: Azure Blob Storage
+- Containers & blobs
+- Access tiers (Hot/Cool/Archive)
+- SAS tokens
+- Large file handling & streaming
+
+---
+
+### Week 7: Queue & Table Storage
+- Queue Storage use cases
+- Async processing patterns
+- Table Storage vs Cosmos Table API
+
+---
+
+### Week 8: Cosmos DB & Azure SQL (High-Level)
+- Cosmos DB concepts
+- APIs overview
+- When NOT to use Cosmos
+- Azure SQL usage from apps
+
+**Outcome:** Choose the right data store for the problem
+
+---
+
+## Phase 3: Implement Azure Security (Weeks 9–12)
+**(AZ-204 weight: ~15–20%)**
+
+### Week 9: Authentication & Authorization
+- Authentication vs Authorization
+- Microsoft Entra ID (Azure AD)
+- App registrations
+- OAuth2 basics & tokens
+
+---
+
+### Week 10: Managed Identity
+- Why secrets are bad
+- System-assigned vs User-assigned identity
+- Using Managed Identity with apps
+
+---
+
+### Week 11: Azure Key Vault
+- Secrets, keys, certificates
+- Access policies & RBAC
+- Integration with App Service & Functions
+
+---
+
+### Week 12: Secure App Design
+- Secure storage access
+- Secure DB access
+- Least privilege principle
+
+**Outcome:** Build production-grade secure apps
+
+---
+
+## Phase 4: Connect to and Consume Azure Services (Weeks 13–15)
+**(AZ-204 weight: ~20–25%)**
+
+### Week 13: Event-Driven Architecture
+- Event Grid
+- Event Hub
+- Events vs messages
+- When async is better than REST
+
+---
+
+### Week 14: Azure Service Bus
+- Queues vs Topics
+- Pub/Sub pattern
+- Dead-letter queues
+- Retry & failure handling
+
+---
+
+### Week 15: Integration Patterns
+- Decoupling services
+- Async workflows
+- Resilient design patterns
+
+**Outcome:** Design scalable, decoupled systems
+
+---
+
+## Phase 5: Monitor and Optimize Azure Solutions (Weeks 16–18)
+**(AZ-204 weight: ~5–10%)**
+
+### Week 16: Application Insights
+- Metrics vs logs
+- Distributed tracing
+- JVM monitoring basics
+
+---
+
+### Week 17: Troubleshooting
+- Diagnosing app crashes
+- Memory & CPU issues
+- Scaling problems
+
+---
+
+### Week 18: Performance & Cost Optimization
+- Scaling vs over-scaling
+- Cost drivers
+- Cost-aware design
+
+**Outcome:** Operate apps reliably and economically
+
+---
+
+## Phase 6: Exam Readiness (Weeks 19–20)
+
+### Week 19: Exam Mapping
+- Review official AZ-204 skills measured
+- Identify weak areas
+- Light practice questions
+
+---
+
+### Week 20: Final Preparation
+- Case studies
+- Scenario-based questions
+- Azure service limits & behaviors
+
+**Action:** Book exam for March 2026
+
+---
+
+## Study Resources (Official)
+
+- AZ-204 Certification Page  
+  https://learn.microsoft.com/learn/certifications/azure-developer/
+
+- AZ-204 Learning Path  
+  https://learn.microsoft.com/learn/paths/develop-solutions-microsoft-azure/
+
+- AZ-204 Official Study Guide  
+  https://learn.microsoft.com/credentials/certifications/resources/study-guides/az-204
+
+---
+
+## Final Notes
+
+- Do NOT read Azure Docs end-to-end
+- Follow the study guide as the single source of truth
+- Use AI only for scoped clarification
+- Certification should reflect real capability
+
+---
+
+**End Goal:**  
+Confident Azure Developer + AZ-204 Certified  
