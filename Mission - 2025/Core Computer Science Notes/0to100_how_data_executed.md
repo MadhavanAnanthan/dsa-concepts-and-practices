@@ -1,6 +1,32 @@
 ##### Below is the hardware hierarchy
 
-Transistor-> Regsisters -> ALU -> Register-> RAM -> OS -> Secondary storage
+$$\text{Transistors & Capacitors} \rightarrow \text{Logic Gates} \rightarrow \text{Registers & ALU (Inside CPU Core)} \rightarrow \text{L1/L2/L3 Cache} \rightarrow \text{RAM} \rightarrow \text{Secondary Storage (SSD/HDD)}$$
+
+# Comprehensive Hardware Components Glossary
+
+### **Core Processing & Logic**
+
+*   **Transistor:** A microscopic electronic semiconductor switch made of silicon that controls the flow of voltage; its "ON" or "OFF" state translates directly into binary ($1$s and $0$s). Used to build logic gates, CPU registers, and processing circuits.
+*   **Silicon Die (CPU Chip):** A tiny physical slice of silicon crystal designed as an integrated circuit (IC) that holds and connects billions of microscopic transistors on a single chip.
+*   **Arithmetic Logic Unit (ALU):** The raw calculation engine of the CPU made from interconnected transistor logic gates (like AND, OR, XOR) that combine incoming voltages to perform arithmetic and logical decisions.
+*   **Control Unit (CU):** The master traffic coordinator of the CPU that fetches instructions from memory, decodes what they mean, and directs electrical signals throughout the core.
+
+### **Memory & Fast Storage Hierarchy**
+
+*   **Capacitor:** A tiny electrical bucket that holds a physical charge; a full charge represents a binary $1$, while an empty charge represents a $0$. Paired with transistors in DRAM to form dynamic memory cells.
+*   **Registers:** The immediate, ultra-fast storage slots located right inside the processor core that hold the exact binary values the math unit is manipulating at that very millisecond. Modern high-end processors use 64-bit wide registers.
+*   **CPU Cache (L1, L2, L3):** A tiny, ultra-fast staging area built of SRAM transistor loops directly on the CPU chip to bridge the speed gap between high-speed registers and slower system RAM.
+
+### **System Memory & Long-Term Storage**
+
+*   **RAM (Random Access Memory):** The temporary workspace built by pairing transistor switches with capacitor buckets, allowing data to be rapidly read and written while the system is powered on. Requires constant refreshing because capacitors naturally leak electrical charge.
+*   **SSD (Solid State Drive):** Long-term non-volatile storage that uses specialized floating-gate transistors to trap electrons, preserving files permanently even when power is cut.
+
+### **Infrastructure & Synchronization**
+
+*   **System Clock:** A quartz crystal that vibrates at a steady frequency to issue billions of rhythmic pulses every second, synchronizing all hardware operations.
+*   **Buses:** The physical copper pathways on the circuit board that route data voltages, memory addresses, and control instructions between hardware components.
+
 
 ##### High level understanding about how the data is converted into binary, then manipulated, and finally return back to secondary storage.
 
