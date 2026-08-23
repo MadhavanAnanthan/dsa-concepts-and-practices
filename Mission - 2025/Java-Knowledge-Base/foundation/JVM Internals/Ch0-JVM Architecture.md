@@ -47,7 +47,7 @@ Then, the original ClassLoader (Application Loader in this case) will try to loa
 
 **1. Bootstrap class loader:** It is responsible to load the native classes such as java.base, java.lang and so on. It is parent of Platform/Extension class loader.
 
-**2. Platform/Extension class loader:** Platform class loader introduced with the Java Platform Module System (JPMS). Loads classes from Java SE Platform modules such as java.sql.Driver, java.logging, etc.
+**2. Platform/Extension class loader:** The old extension class loader model using the `ext/` directory has been fully replaced by the **Platform ClassLoader** introduced under the Java Platform Module System (JPMS). Loads classes from Java SE Platform modules such as java.sql.Driver, java.logging, etc.
 
 **3. Application class loader :** It is responsible to load the application's own classes and third party JAR's specified in the classpath.
 
