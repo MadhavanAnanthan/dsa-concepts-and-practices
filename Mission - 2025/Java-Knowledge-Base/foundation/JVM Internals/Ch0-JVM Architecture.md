@@ -14,7 +14,7 @@
 2. Runtime Memory/Data Area
 3. Execution Engine
 
-![img.png](img.png)
+![jvm-architecture.png](jvm-architecture.png)
 
 ## **1. Class loader**
 
@@ -446,4 +446,8 @@ You can configure heap memory size using JVM options:
 - `-Xss`: Stack size per thread
 
 
+
 ---
+read these concepts - Stack Frame Internals  (in heap), jit lifecycle
+
+jmm, gc and its algos. jvm monitoring and Troubleshooting  ,OutOfMemoryError Scenarios  ,

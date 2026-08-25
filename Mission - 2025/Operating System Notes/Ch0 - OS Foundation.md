@@ -1,13 +1,41 @@
-#### OS Foundation
+# How a Computer Starts
 
-Before diving into OS, we need to understand how the OS is loaded from secondary storage into Main memory, So we need to understand about BIOS or Firmware.<br>
-**To understand Kernal** - [Check Ch8](Ch8%20-%20Kernel%20vs%20User%20Mode.md)<br>
-We aware OS will be middleware between hardware and installed applications. But Kernal which is present in OS, will take care all things.
-**BIOS/UEFI Storage:** The BIOS/UEFI firmware is a software, stored in a ROM or flash memory chip on the motherboard. This is non-volatile memory, meaning it retains its contents even when the computer is powered off.<br>
-**Boot Process:** When the computer is turned on, the BIOS/UEFI is the first software to run.<br>
-**POST and Initialization:** The BIOS/UEFI performs the POST to check hardware functionality and initializes the hardware components.<br>
-**OS Loading:** The BIOS/UEFI locates and loads the operating system(contains KERNAL) from a secondary storage device (hard drive, SSD, etc.) into RAM.<br>
-**OS Control:** After the OS(contains KERNAL) is loaded into RAM, the BIOS/UEFI's role is complete. The Kernal takes over control of the system, including all hardware interactions. The OS uses its own drivers and system calls to manage hardware, memory, processes, and all other resources. The BIOS/UEFI is no longer involved in these operations.<br>
+Before understanding an OS, we need to understand how the system starts.
 
-**Conclusion about BIOS**
-The BIOS/UEFI is crucial for the initial startup of the computer and loading the OS. However, it does not provide ongoing services after the OS is running. The OS's Kernal is fully responsible for managing the system and interacting with hardware once it has been loaded
+**BIOS/UEFI** is firmware, which means software stored in **non-volatile flash memory on the motherboard**. Unlike the OS, it is not stored on your normal SSD/HDD. When you press the power button, the **CPU starts executing the BIOS/UEFI firmware**.
+
+BIOS/UEFI first performs **POST (Power-On Self-Test)** and initializes the essential hardware required to start the computer, such as the CPU and RAM. It then looks for a **bootable device**, such as an SSD, HDD, or USB drive.
+
+Once it finds one, **BIOS/UEFI loads/starts the bootloader, and the CPU executes the bootloader's instructions**. The bootloader is a small program stored on persistent storage whose main job is to find the **Operating System kernel**, load it from the SSD/HDD into **RAM**, and then transfer control to the kernel. The **CPU then starts executing the kernel's instructions**.
+
+The **kernel is the core of the Operating System**. Once the kernel starts running, it takes control of the system and manages important resources such as the CPU, memory, processes and threads, devices, filesystems, and I/O.
+
+Applications cannot normally access hardware or protected system resources directly. Instead, they request services from the kernel using **system calls**. For example, when an application wants to read a file, it asks the kernel, and the kernel works with the filesystem and device driver to access the storage device.
+
+After the OS has started, BIOS/UEFI is mostly no longer involved in normal system operation. The **kernel and device drivers** handle most hardware and resource management.
+
+### Complete Flow
+
+```text id="o0acng"
+Power ON
+   ↓
+CPU executes BIOS/UEFI firmware
+   ↓
+POST + initialize essential hardware
+   ↓
+BIOS/UEFI finds a bootable device
+   ↓
+BIOS/UEFI loads/starts Bootloader
+   ↓
+CPU executes Bootloader
+   ↓
+Bootloader loads Kernel into RAM
+   ↓
+CPU executes Kernel
+   ↓
+Kernel manages the system
+   ↓
+Applications → System Calls → Kernel
+```
+
+**In short:** CPU executes BIOS/UEFI → BIOS/UEFI starts the bootloader → CPU executes the bootloader → Bootloader loads the kernel → CPU executes the kernel → Kernel manages the system.
