@@ -6,6 +6,8 @@
   <component name="ChangeListManager">
     <list default="true" id="5bb84fcf-40eb-4fb6-851a-ce2494c24100" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Mission - 2025/Java-Knowledge-Base/foundation/JVM Internals/Ch0-JVM Architecture.md" beforeDir="false" afterPath="$PROJECT_DIR$/Mission - 2025/Java-Knowledge-Base/foundation/JVM Internals/Ch0-JVM Architecture.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Mission - 2025/Java-Knowledge-Base/foundation/JVM Internals/Ch1-Points to Remember in JVM Internal Working.md" beforeDir="false" afterPath="$PROJECT_DIR$/Mission - 2025/Java-Knowledge-Base/foundation/JVM Internals/Ch1-Points to Remember in JVM Internal Working.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -61,7 +63,7 @@
     "node.js.detected.package.jshint": "true",
     "node.js.selected.package.jshint": "",
     "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "preferences.pluginManager"
+    "settings.editor.selected.configurable": "com.github.copilot.settings.customization.CustomizationConfigurable"
   }
 }]]></component>
   <component name="RecentsManager">
@@ -89,6 +91,17 @@
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
   <component name="VcsManagerConfiguration">
     <ignored-roots>
