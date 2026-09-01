@@ -1181,3 +1181,40 @@ We maintain:
               ▼
 Or simply use ArrayList
 ```
+## Arrays in Java – Memory Basics
+
+1. **Arrays are considered objects in Java.**
+
+2. **Arrays of primitive types store the actual values inside the array object in the Heap.**
+
+```java
+int[] a = {1, 2, 3};
+```
+
+```text
+Stack                Heap
+
+a --------->       [1][2][3]
+```
+
+- `a` stores the reference.
+- The actual primitive values are stored inside the array in the Heap.
+
+3. **Arrays of objects store references inside the array, while the actual objects are stored separately in the Heap.**
+
+```java
+String[] str = {"A", "B"};
+```
+
+```text
+Stack                Heap
+
+str --------->     [ref1][ref2]
+                     |     |
+                     v     v
+                    "A"   "B"
+```
+
+- `str` stores the reference to the array.
+- The array contains references to the `String` objects.
+- The actual `String` objects are stored separately in the Heap.
