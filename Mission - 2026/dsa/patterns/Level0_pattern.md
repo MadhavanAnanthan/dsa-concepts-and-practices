@@ -289,3 +289,199 @@ Space: O(1)
 Remember:
 Normal binary search → found = stop.
 Boundary binary search → found = save + keep searching.
+
+## Valid Anagram
+
+Pattern: Frequency Counting
+
+### Lowercase `a-z`
+- Use `int[26]`.
+- Map character to index using:
+  `char - 'a'`
+- Increment for first string.
+- Decrement for second string.
+- All counts must end at `0`.
+
+Time: O(n)  
+Space: O(1)
+
+### ASCII Reference
+- `'A'` = 65
+- `'Z'` = 90
+- `'a'` = 97
+- `'z'` = 122
+
+Examples:
+- `'a' - 'a'` → `97 - 97 = 0`
+- `'z' - 'a'` → `122 - 97 = 25`
+
+### Mixed Uppercase + Lowercase
+If input may contain both `A-Z` and `a-z`:
+
+- Use `int[128]` for ASCII characters, or
+- Use `HashMap<Character, Integer>`.
+
+With ASCII array:
+
+`frequency[s.charAt(i)]++`  
+`frequency[t.charAt(i)]--`
+
+### Broader / Unknown Characters
+- Use `HashMap<Character, Integer>`.
+
+### Remember
+- Small fixed character range → frequency array.
+- Unknown/large character range → HashMap.
+- Frequency array is usually faster and uses constant space when the character range is fixed.
+
+## Single Number
+
+Pattern: Frequency Counting / XOR
+
+### Frequency Array
+- Count occurrence of each number.
+- Return the number whose frequency is `1`.
+- For negative values, use an offset to map them to valid array indexes.
+
+Example:
+`index = value + offset`
+
+If range is `-30000` to `30000`:
+- array size = `60001`
+- offset = `30000`
+
+Time: O(n + range)
+Space: O(range)
+
+### Optimal - XOR
+XOR rules:
+- `x ^ x = 0`
+- `x ^ 0 = x`
+- Order does not matter.
+
+Since every number appears twice except one:
+- duplicate pairs cancel each other.
+- remaining value is the single number.
+
+Example:
+`[4,1,2,1,2]`
+
+`4 ^ 1 ^ 2 ^ 1 ^ 2`
+→ `1 ^ 1 = 0`
+→ `2 ^ 2 = 0`
+→ remaining = `4`
+
+Time: O(n)
+Space: O(1)
+
+Remember:
+Every value appears exactly twice except one
+→ think XOR.
+
+## Missing Number
+
+Pattern: Math / XOR
+
+### Sum Approach
+- Expected numbers are from `0` to `n`.
+- Sum all expected values.
+- Subtract every number present in input.
+- Remaining value is the missing number.
+
+Example:
+`nums = [3,0,1]`
+
+Expected:
+`0 + 1 + 2 + 3 = 6`
+
+Actual:
+`3 + 0 + 1 = 4`
+
+Missing:
+`6 - 4 = 2`
+
+Time: O(n)
+Space: O(1)
+
+### XOR Approach
+XOR expected numbers `0..n`
+with all numbers present in the array.
+
+Matching numbers cancel:
+- `x ^ x = 0`
+- remaining value = missing number.
+
+Time: O(n)
+Space: O(1)
+
+Remember:
+Expected range and actual values differ by exactly one number
+→ subtraction or XOR can reveal it.
+
+## Merge Sorted Array
+
+Pattern: Two Pointers / Three Pointers / Merge from End
+
+- `p1` → last valid element in `nums1`
+- `p2` → last element in `nums2`
+- `writeInPlace` → last available position in `nums1`
+
+### Approach
+- Compare `nums1[p1]` and `nums2[p2]`.
+- Put the larger value at `writeInPlace`.
+- Move that pointer backward.
+- Move `writeInPlace` backward.
+- Continue while both arrays still have values.
+- If `nums2` still has values left, copy them into `nums1`.
+
+### Why merge from the end?
+`nums1` already has free space at the end.
+
+So filling from right to left avoids:
+- shifting existing elements
+- creating another array
+- sorting everything again
+
+### Complexity
+
+Time: `O(m + n)`
+
+Why?
+- Each valid element from `nums1` is processed at most once.
+- Each element from `nums2` is processed at most once.
+
+So:
+
+`m + n` operations → `O(m + n)`
+
+Space: `O(1)`
+
+Why?
+- No extra array, Set, or Map is created.
+- Only a few integer variables are used:
+  - `p1`
+  - `p2`
+  - `writeInPlace`
+
+A fixed number of variables → `O(1)` extra space.
+
+### Compared with Arrays.sort()
+
+Copy + sort:
+
+Time:
+`O((m+n) log(m+n))`
+
+Three-pointer merge:
+
+Time:
+`O(m+n)`
+
+So three-pointer merge is more efficient because both input arrays are already sorted.
+
+### Remember
+
+Two sorted arrays + free space at end
+→ compare largest values
+→ fill from right to left
+→ `O(m+n)` time, `O(1)` space.
