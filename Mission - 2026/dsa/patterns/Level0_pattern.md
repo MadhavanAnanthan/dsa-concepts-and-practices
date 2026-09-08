@@ -177,6 +177,31 @@ Examples:
 - Move Zeroes → slow/fast
 - Linked List Cycle → different speeds
 
+## Two Pointer Selection Rule
+
+### Slow / Fast
+Use when:
+- one pointer scans
+- one pointer writes/tracks valid position
+- removing/filtering/compacting
+
+Examples:
+- Remove Duplicates
+- Move Zeroes
+- Remove Element
+
+### Opposite Ends
+Use when:
+- array is sorted
+- answer depends on both extremes
+- compare left vs right
+- largest/smallest candidate can be at either end
+
+Examples:
+- Reverse Array
+- Sorted Squares
+- Two Sum II
+
 ## Maximum Consecutive Ones
 
 Pattern: Traversal / Running Count
@@ -485,3 +510,28 @@ Two sorted arrays + free space at end
 → compare largest values
 → fill from right to left
 → `O(m+n)` time, `O(1)` space.
+
+# 977. Squares of a Sorted Array
+
+## Pattern
+Two Pointers / Opposite Ends
+
+## Idea
+- The array is already sorted.
+- Squaring can disturb the order because negative numbers may become large positive values.
+- The **largest absolute value must be at one of the two ends** of a sorted array.
+- Therefore, the largest square must also come from either the left end or the right end.
+- Compare the squares of both ends.
+- Put the larger square into the result array from right to left.
+- Move only the pointer whose value was used.
+
+## Why Opposite-End Two Pointers?
+Because the array is sorted, the **largest absolute value must be at one of the two ends**.
+
+Example:
+
+```text
+[-7, -3, 2, 3, 11]
+
+Left end  → |-7| = 7
+Right end → |11| = 11
