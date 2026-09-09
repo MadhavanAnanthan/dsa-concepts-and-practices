@@ -1,5 +1,6 @@
-Extra space: even with multiple structures, if all scale with the same size n → O(n); if sizes are independent → O(n + m).
+1. Extra space: even with multiple structures, if all scale with the same size n → O(n); if sizes are independent → O(n + m).
 
+2. in 2 pointer, same direction pattern is very broader, slow/fast and read/write pointer are also same direction specific pointer pattern. opposite ends are completely different pattern.
 ## Hashing - Points to Remember
 
 - Need to find duplicates → `HashSet`
@@ -12,3 +13,14 @@ Extra space: even with multiple structures, if all scale with the same size n �
 
 Typical time: O(n) average  
 Typical extra space: O(n)
+
+Two Sum
+→ unsorted
+→ HashMap
+→ O(n) extra space
+
+Two Sum II
+→ sorted
+→ constant extra space
+→ opposite-end two pointers
+→ O(1) space

@@ -30,12 +30,57 @@ Space: `O(n)`
 
 Target is known → calculate the missing/complement value → use hashing for fast lookup.
 
-
 ### Pattern Hint
+
 Need pair whose sum = target
 → Calculate complement
 → `needed = target - current`
 → Fast lookup using HashSet/HashMap
+
+---
+
+## Two Sum II - Input Array Is Sorted
+
+Pattern: Opposite-End Two Pointers
+
+### Idea
+
+* Array is already sorted.
+* Start one pointer at the smallest value and another at the largest value.
+* Calculate:
+  `sum = numbers[left] + numbers[right]`
+
+**If sum == target**
+
+* Pair is found.
+
+**If sum > target**
+
+* Sum is too large.
+* Move `right--` to get a smaller value.
+
+**If sum < target**
+
+* Sum is too small.
+* Move `left++` to get a larger value.
+
+Time: `O(n)`
+Space: `O(1)`
+
+### Remember
+
+Because the array is sorted:
+
+* Need smaller sum → move `right`.
+* Need larger sum → move `left`.
+
+### Pattern Hint
+
+Sorted array + need pair whose sum = target + constant extra space
+→ Opposite-end two pointers
+→ `left = 0`, `right = n - 1`
+→ Use the sum to decide which pointer to move.
+
 
 ## Find Maximum in Array
 
