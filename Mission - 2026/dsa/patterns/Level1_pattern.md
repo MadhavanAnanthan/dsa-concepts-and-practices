@@ -142,7 +142,9 @@ Need to compare beginning and end repeatedly
 
 ## Longest Common Prefix
 
-Pattern: String Traversal / Prefix Comparison
+Pattern: `String Traversal`
+
+Technique: `Horizontal Scanning / Vertical Scanning for prefix comparison`
 
 ### Initial Approach
 
