@@ -1,107 +1,102 @@
-# ArrayList – DSA Notes
-
-## 1. What is an ArrayList?
-
-`ArrayList` is a **resizable array** implementation in Java.
-
-Unlike a normal array, whose size is fixed after creation, an `ArrayList` can grow and shrink dynamically.
-
-```java
-import java.util.ArrayList;
-
-ArrayList<Integer> list = new ArrayList<>();
-```
-
-Conceptually:
-
-```text
-ArrayList
-   |
-   v
-[10][20][30][ ][ ]
-```
-
-Internally, `ArrayList` uses an array.
+# ArrayList Master Notes (Interview + Production Ready)
 
 ---
 
-## 2. Array vs ArrayList
+# 1. Collection Hierarchy
 
-| Feature | Array | ArrayList |
-|---|---|---|
-| Size | Fixed | Dynamic |
-| Stores primitives directly | Yes | No |
-| Stores objects | Yes | Yes |
-| Generic support | No | Yes |
-| Built-in methods | Very limited | Many |
-| Random access | O(1) | O(1) |
+```text
+Iterable
+    ↑
+Collection
+    ↑
+List
+    ↑
+ArrayList
+```
+
+- `Iterable` provides iteration support.
+- `Collection` provides common operations:
+  - add()
+  - remove()
+  - contains()
+  - size()
+  - isEmpty()
+  - clear()
+- `List` adds:
+  - get(index)
+  - set(index, value)
+  - add(index, value)
+  - indexOf()
+- `ArrayList` provides the actual implementation.
+
+### OOP Principle
+
+```text
+Interface = What
+Implementation = How
+```
 
 Example:
 
 ```java
-int[] arr = new int[5];
-
-ArrayList<Integer> list = new ArrayList<>();
+List<String> list = new ArrayList<>();
 ```
 
-`ArrayList` cannot directly store primitive types.
+List defines the contract.
 
-```java
-ArrayList<int> list; // Invalid
-```
-
-Use wrapper classes:
-
-```java
-ArrayList<Integer> list = new ArrayList<>();
-```
-
-Java performs autoboxing:
-
-```java
-list.add(10);
-```
-
-Conceptually:
-
-```java
-int 10
-   |
-Autoboxing
-   |
-   v
-Integer object
-```
+ArrayList decides how to implement it.
 
 ---
 
-## 3. Internal Structure
+# 2. What is ArrayList?
 
-Internally, an `ArrayList` stores elements in an object array.
+ArrayList is a dynamically resizable array.
 
-Conceptually:
+Internally:
+
+```java
+Object[]
+```
+
+is used to store elements.
+
+Unlike normal arrays:
+
+```java
+int[] arr = new int[10];
+```
+
+whose size is fixed,
+
+ArrayList automatically grows when capacity becomes full.
+
+---
+
+# 3. ArrayList Stores References
+
+```java
+ArrayList<Person> persons;
+```
+
+Internally stores:
 
 ```text
-ArrayList object
-      |
-      v
-Object[] elementData
-
-[ref1][ref2][ref3][null][null]
-   |     |     |
-   v     v     v
-  10    20    30
+ref1
+ref2
+ref3
 ```
 
-The internal array may have more capacity than the current number of elements.
+Actual objects live elsewhere in heap memory.
+
+ArrayList stores only references.
 
 ---
 
-## 4. Size vs Capacity
+# 4. Capacity vs Size
 
 ### Size
 
-The number of elements currently stored.
+Number of elements present.
 
 ```java
 list.size();
@@ -109,144 +104,203 @@ list.size();
 
 ### Capacity
 
-The number of elements the internal array can currently hold before resizing is required.
+Size of internal array.
 
 Example:
 
-```text
-Size = 3
-Capacity = 5
-
-[10][20][30][ ][ ]
+```java
+ArrayList<Integer> list =
+        new ArrayList<>(100);
 ```
 
-The public `ArrayList` API exposes size, but not its internal capacity directly.
-
----
-
-## 5. Dynamic Resizing
-
-When the internal array becomes full, `ArrayList` creates a larger array and copies the elements.
-
-Conceptually:
+Current:
 
 ```text
-Old array
-
-[10][20][30]
+Size     = 0
+Capacity = 100
 ```
 
-Need to insert `40`.
-
-```text
-Create larger array
-
-[ ][ ][ ][ ][ ]
-```
-
-Copy:
-
-```text
-[10][20][30][ ][ ]
-```
-
-Insert:
-
-```text
-[10][20][30][40][ ]
-```
-
-This resizing operation costs:
-
-```text
-O(n)
-```
-
-because existing elements must be copied.
-
-However, resizing does not happen on every insertion.
-
-Therefore, appending is considered:
-
-```text
-Amortized O(1)
-```
-
----
-
-## 6. Important Operations
-
-### Add at End
+After:
 
 ```java
 list.add(10);
 ```
 
-Average / amortized complexity:
+Current:
 
 ```text
-O(1)
-```
-
-Worst case during resizing:
-
-```text
-O(n)
+Size     = 1
+Capacity = 100
 ```
 
 ---
 
-### Access by Index
+# 5. Initial Capacity
 
 ```java
-list.get(2);
+new ArrayList<>();
 ```
 
-Complexity:
+In Java 8+, ArrayList does not immediately allocate a 10-element array.
 
-```text
-O(1)
+Memory allocation happens during first insertion.
+
+```java
+list.add(1);
 ```
 
-because `ArrayList` internally uses an array.
+Then default capacity becomes 10.
 
 ---
 
-### Update by Index
+# 6. Dynamic Growth
 
-```java
-list.set(2, 100);
-```
-
-Complexity:
+When capacity is exceeded:
 
 ```text
-O(1)
+10
 ```
 
----
+ArrayList creates a larger array.
 
-### Insert at Arbitrary Index
+Formula:
 
 ```java
-list.add(2, 50);
+newCapacity =
+    oldCapacity + (oldCapacity >> 1);
 ```
 
-Elements after the index must shift to the right.
+Approximately:
+
+```text
+1.5x growth
+```
 
 Example:
 
 ```text
-Before:
-
-[10][20][30][40]
-
-Insert 25 at index 2
-
-[10][20][25][30][40]
+10 -> 15 -> 22 -> 33 -> ...
 ```
 
-Complexity:
+Process:
+
+```text
+Old Array
+     ↓
+Create Larger Array
+     ↓
+Copy Elements
+     ↓
+Switch Reference
+```
+
+Old array becomes unreachable and eventually gets garbage collected.
+
+---
+
+# 7. Why add() is O(1) Amortized?
+
+Most insertions:
+
+```java
+list.add(value);
+```
+
+Only put element into next free slot.
+
+```text
+O(1)
+```
+
+Occasionally:
+
+```text
+Array Resize
++
+Copy All Elements
+```
+
+occurs.
+
+That operation is:
+
+```text
+O(n)
+```
+
+Since resizing occurs infrequently:
+
+```text
+Average = Amortized O(1)
+```
+
+---
+
+# 8. Time Complexity
+
+## ArrayList
+
+| Operation | Complexity |
+|------------|------------|
+| Add at End | O(1) Amortized |
+| Get by Index | O(1) |
+| Search by Value | O(n) |
+| Insert Middle | O(n) |
+| Remove Middle | O(n) |
+
+---
+
+# 9. ArrayList vs LinkedList
+
+## Internal Structure
+
+### ArrayList
+
+```text
+[A][B][C][D]
+```
+
+Uses continuous array storage.
+
+### LinkedList
+
+```text
+A <-> B <-> C <-> D
+```
+
+Uses doubly linked nodes.
+
+Each node stores:
+
+```text
+Data
+Previous
+Next
+```
+
+---
+
+## Access by Index
+
+ArrayList:
+
+```java
+list.get(i);
+```
+
+Direct indexing.
+
+```text
+O(1)
+```
+
+LinkedList:
+
+Needs traversal.
+
+```text
+Head -> Next -> Next
+```
 
 ```text
 O(n)
@@ -254,231 +308,769 @@ O(n)
 
 ---
 
-### Remove from End
+## Insertion in Middle
 
-```java
-list.remove(list.size() - 1);
-```
-
-Complexity:
+ArrayList:
 
 ```text
-O(1)
+Shift elements
+```
+
+```text
+O(n)
+```
+
+LinkedList:
+
+Insertion itself is O(1).
+
+But Java first has to find the node.
+
+```text
+Traversal O(n)
++
+Insertion O(1)
+```
+
+Overall:
+
+```text
+O(n)
 ```
 
 ---
 
-### Remove from Arbitrary Index
+## Memory Usage
+
+ArrayList:
+
+```text
+Less memory
+```
+
+LinkedList:
+
+```text
+More memory
+```
+
+because every node stores:
+
+```text
+next
+prev
+```
+
+references.
+
+---
+
+## Cache Locality
+
+ArrayList:
+
+```text
+CPU Cache Friendly
+```
+
+Elements stored continuously.
+
+LinkedList:
+
+```text
+Nodes scattered in memory
+```
+
+Cache misses occur frequently.
+
+This is one major reason ArrayList is usually faster in practice.
+
+---
+
+# 10. Fail-Fast Iterator
+
+Collections like:
+
+```java
+ArrayList
+LinkedList
+HashSet
+HashMap
+```
+
+have Fail-Fast iterators.
+
+Example:
+
+```java
+for(String s : list){
+    list.add("X");
+}
+```
+
+May throw:
+
+```java
+ConcurrentModificationException
+```
+
+---
+
+# 11. Why Fail-Fast Exists?
+
+Not because of:
+
+```text
+❌ Performance
+❌ Array Shifting
+❌ Immutability
+```
+
+Actual reason:
+
+```text
+Prevent unpredictable iteration results.
+```
+
+Example:
+
+```text
+[10,20,30,40]
+```
+
+Iterator currently reading:
+
+```text
+20
+```
+
+Another operation removes:
+
+```text
+10
+```
+
+Now iterator state becomes inconsistent.
+
+Questions arise:
+
+```text
+Did I skip something?
+Did I process twice?
+What should next() return?
+```
+
+Instead of risking corruption:
+
+```java
+ConcurrentModificationException
+```
+
+is thrown.
+
+---
+
+# 12. How Fail-Fast Works?
+
+Collections maintain:
+
+```java
+modCount
+```
+
+Every structural modification increases it.
+
+Example:
+
+```java
+list.add("A");
+```
+
+```text
+modCount = 1
+```
+
+Iterator stores:
+
+```java
+expectedModCount
+```
+
+If values differ:
+
+```java
+ConcurrentModificationException
+```
+
+is thrown.
+
+---
+
+# 13. Fail-Fast is NOT Thread Safety
+
+Purpose:
+
+```text
+Detect modification during iteration.
+```
+
+Purpose is NOT:
+
+```text
+Thread Safety
+```
+
+Fail-Fast simply prevents unpredictable results.
+
+---
+
+# 14. Enhanced For Loop Uses Iterator
+
+This:
+
+```java
+for(String s : list)
+```
+
+internally becomes approximately:
+
+```java
+Iterator<String> it =
+    list.iterator();
+```
+
+Therefore:
+
+```text
+Can throw ConcurrentModificationException
+```
+
+---
+
+# 15. Index Loop Does NOT Use Iterator
+
+```java
+for(int i=0;i<list.size();i++)
+```
+
+does not use iterator.
+
+Therefore:
+
+```text
+No Fail-Fast Monitoring
+```
+
+Although logical bugs are still possible.
+
+---
+
+# 16. Iterator.remove()
+
+This is valid:
+
+```java
+Iterator<Integer> it =
+        list.iterator();
+
+while(it.hasNext()){
+    Integer n = it.next();
+
+    if(n == 10){
+        it.remove();
+    }
+}
+```
+
+No exception.
+
+Iterator updates internal state correctly.
+
+---
+
+# 17. trimToSize()
+
+Suppose:
+
+```java
+ArrayList<Integer> list =
+        new ArrayList<>();
+```
+
+Capacity becomes:
+
+```text
+10000
+```
+
+After:
+
+```java
+list.clear();
+```
+
+Current:
+
+```text
+Size = 0
+```
+
+But capacity may still be:
+
+```text
+10000
+```
+
+Calling:
+
+```java
+list.trimToSize();
+```
+
+reduces capacity to current size.
+
+Useful after processing very large temporary lists.
+
+---
+
+# 18. remove() Interview Trap
+
+List contains:
+
+```java
+[10,20,30]
+```
+
+### Remove By Index
 
 ```java
 list.remove(1);
 ```
 
-Elements after the removed element must shift left.
+Removes:
 
 ```text
-Before:
-
-[10][20][30][40]
-
-Remove index 1
-
-[10][30][40]
-```
-
-Complexity:
-
-```text
-O(n)
+20
 ```
 
 ---
 
-### Search
+### Remove By Value
 
 ```java
-list.contains(30);
-list.indexOf(30);
+list.remove(Integer.valueOf(20));
 ```
 
-The list may need to scan elements one by one.
-
-Complexity:
+Removes:
 
 ```text
-O(n)
+20
 ```
 
----
-
-## 7. Time Complexity Summary
-
-| Operation | Time Complexity |
-|---|---:|
-| Access by index | O(1) |
-| Update by index | O(1) |
-| Add at end | Amortized O(1) |
-| Insert at beginning | O(n) |
-| Insert at middle | O(n) |
-| Remove from end | O(1) |
-| Remove from beginning | O(n) |
-| Remove from middle | O(n) |
-| Search by value | O(n) |
-| Contains | O(n) |
+Different overloaded methods.
 
 ---
 
-## 8. Why Insertion and Deletion Can Be Expensive
-
-`ArrayList` maintains elements in index order.
-
-If an element is inserted or removed in the middle, later elements must move.
+# 19. Arrays.asList()
 
 Example:
 
-```text
-Index:  0   1   2   3
-       [A] [B] [C] [D]
+```java
+List<String> list =
+    Arrays.asList("A","B","C");
 ```
 
-Insert `X` at index `1`:
+Important:
 
 ```text
-       [A] [X] [B] [C] [D]
+NOT a real ArrayList.
 ```
 
-`B`, `C`, and `D` are shifted right.
-
-That is why insertion can become:
+Think:
 
 ```text
-O(n)
+Array + List View
+```
+
+Internally backed by a fixed-size array.
+
+---
+
+## Allowed
+
+```java
+list.get(0);
+list.set(0,"X");
+list.contains("A");
 ```
 
 ---
 
-## 9. Iterating an ArrayList
-
-### Using for loop
+## Not Allowed
 
 ```java
-for (int i = 0; i < list.size(); i++) {
-    System.out.println(list.get(i));
-}
+list.add("D");
+list.remove("A");
 ```
 
-### Enhanced for loop
+Throws:
 
 ```java
-for (Integer value : list) {
-    System.out.println(value);
-}
+UnsupportedOperationException
 ```
 
-### Iterator
+Reason:
 
-```java
-Iterator<Integer> iterator = list.iterator();
-
-while (iterator.hasNext()) {
-    System.out.println(iterator.next());
-}
-```
-
-Traversal complexity:
+Arrays are fixed size.
 
 ```text
-O(n)
+[A][B][C]
+```
+
+cannot become:
+
+```text
+[A][B][C][D]
+```
+
+without creating a new array.
+
+---
+
+# 20. Arrays.asList() Shares Same Array
+
+```java
+String[] arr =
+        {"A","B","C"};
+
+List<String> list =
+        Arrays.asList(arr);
+```
+
+Now:
+
+```java
+list.set(0,"X");
+```
+
+Array also changes:
+
+```java
+arr[0]
+```
+
+Output:
+
+```text
+X
+```
+
+Because both point to same underlying data.
+
+---
+
+# 21. Real Resizable List
+
+If true dynamic resizing is needed:
+
+```java
+List<String> list =
+    new ArrayList<>(
+        Arrays.asList("A","B","C")
+    );
+```
+
+Now:
+
+```java
+list.add("D");
+list.remove("A");
+```
+
+work correctly.
+
+---
+
+# 22. List.of()
+
+Java 9+
+
+```java
+List<String> list =
+    List.of("A","B","C");
+```
+
+Creates immutable list.
+
+---
+
+## Not Allowed
+
+```java
+list.add("D");
+list.remove("A");
+list.set(0,"X");
+```
+
+Throws:
+
+```java
+UnsupportedOperationException
 ```
 
 ---
 
-## 10. ArrayList and Memory
-
-An `ArrayList` may reserve unused capacity.
+# 23. subList()
 
 Example:
 
-```text
-size = 3
-capacity = 8
-
-[10][20][30][ ][ ][ ][ ][ ]
+```java
+List<Integer> sub =
+        list.subList(0,3);
 ```
 
-Therefore, it can use some extra memory to make future additions efficient.
+Many developers think it creates a new list.
+
+Wrong.
+
+It creates a:
+
+```text
+View
+```
+
+of the original list.
 
 ---
 
-## 11. When to Use ArrayList
+Example
 
-Prefer `ArrayList` when:
+Original:
 
-- You need frequent random access by index.
-- Most insertions happen at the end.
-- You perform more reads than insertions/deletions in the middle.
-- Cache-friendly contiguous-array storage is beneficial.
+```text
+[1,2,3,4,5]
+```
 
-Typical DSA use cases:
+SubList:
 
-- Dynamic arrays
-- Storing traversal results
-- Adjacency lists
-- Prefix/suffix values
-- Intermediate results
-- Sliding-window storage when deque behavior is not required
+```text
+[1,2,3]
+```
+
+Now:
+
+```java
+sub.remove(0);
+```
+
+Result:
+
+```text
+sub  = [2,3]
+
+list = [2,3,4,5]
+```
+
+Both are affected.
 
 ---
 
-## 12. When ArrayList Is Not Ideal
+# 24. Independent Copy of subList()
 
-Avoid relying on `ArrayList` when you frequently:
+If independent list is needed:
 
-- Insert at the beginning
-- Delete from the beginning
-- Insert/delete repeatedly in the middle
+```java
+List<Integer> copy =
+    new ArrayList<>(
+        list.subList(0,3)
+    );
+```
 
-These operations require shifting elements.
+Now changes do not affect each other.
 
 ---
 
-## 13. Important Interview Point
+# 25. Thread Safety
 
-`ArrayList` gives:
+ArrayList is:
 
 ```text
-Fast index access
-        +
-Dynamic size
+NOT Thread Safe
 ```
 
-but pays for it with:
+Multiple threads modifying same list may cause problems.
 
-```text
-Expensive middle insertion/deletion
-        +
-Occasional resize and copy
+Options:
+
+```java
+Collections.synchronizedList(...)
+```
+
+or
+
+```java
+CopyOnWriteArrayList
 ```
 
 ---
 
-## 14. DSA Mental Model
+# 26. CopyOnWriteArrayList
 
-Think of `ArrayList` as:
-
-```text
-Dynamic Array
-```
-
-Its main strengths are:
+Best when:
 
 ```text
-Index-based access → O(1)
-Append → Amortized O(1)
+Many Reads
+Very Few Writes
 ```
 
-Its main weakness is:
+When write occurs:
+
+```java
+add()
+remove()
+```
+
+Entire array is copied.
 
 ```text
-Insertion / deletion in middle → O(n)
+Old Array
+     ↓
+New Array
+     ↓
+Reference Switched
 ```
+
+Old array becomes eligible for GC.
+
+---
+
+# 27. Why CopyOnWriteArrayList Doesn't Fail?
+
+Iterator receives:
+
+```text
+Snapshot
+```
+
+Example:
+
+Iterator starts:
+
+```text
+[1,2,3]
+```
+
+Another thread adds:
+
+```text
+4
+```
+
+Current iterator still sees:
+
+```text
+[1,2,3]
+```
+
+It never sees:
+
+```text
+4
+```
+
+during that iteration.
+
+Benefits:
+
+```text
+✅ Thread Safe
+✅ No ConcurrentModificationException
+```
+
+Trade-offs:
+
+```text
+❌ Expensive Writes
+❌ Extra Memory
+```
+
+---
+
+# 28. Enterprise Engineering Takeaway
+
+Many ArrayList design decisions follow:
+
+```text
+Correctness > Performance
+Predictability > Cleverness
+Fail Fast > Silent Corruption
+```
+
+Fail-Fast exists because producing:
+
+```text
+Wrong Results
+```
+
+is usually worse than throwing an exception.
+
+Particularly in:
+
+```text
+Banking
+Payments
+Healthcare
+Enterprise Systems
+```
+
+---
+
+# Final Interview Summary
+
+Know these confidently:
+
+✅ Collection Hierarchy
+
+✅ Dynamic Array
+
+✅ Capacity vs Size
+
+✅ Growth Strategy (1.5x)
+
+✅ Amortized O(1)
+
+✅ Complexity Analysis
+
+✅ ArrayList vs LinkedList
+
+✅ Memory Overhead
+
+✅ Cache Locality
+
+✅ Fail-Fast Iterators
+
+✅ modCount
+
+✅ Iterator.remove()
+
+✅ ConcurrentModificationException Purpose
+
+✅ trimToSize()
+
+✅ remove(index) vs remove(value)
+
+✅ Arrays.asList()
+
+✅ List.of()
+
+✅ subList()
+
+✅ Thread Safety
+
+✅ CopyOnWriteArrayList
+
+✅ Snapshot Iterator
+
+✅ Enterprise Design Principles
+
+After mastering all above, move to **HashMap**. That is the next most important Java Collection topic.
