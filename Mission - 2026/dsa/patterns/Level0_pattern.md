@@ -580,3 +580,268 @@ Example:
 
 Left end  → |-7| = 7
 Right end → |11| = 11
+
+---
+
+# 53. Maximum Subarray
+
+## Pattern
+
+**Kadane's Algorithm / Running Sum**
+
+## How to Identify This Pattern
+
+Look for:
+
+* Need to find the maximum sum
+* Elements must be **contiguous**
+* Need an `O(n)` solution
+* Need to decide whether the previous running sum is useful for future elements
+
+### Pattern Hint
+
+```text
+Maximum sum
++ contiguous subarray
+→ Running sum
+→ If running sum becomes negative, discard it
+→ Kadane's Algorithm
+```
+
+## Core Idea
+
+Maintain:
+
+```text
+currentSum → sum of the current subarray
+
+maxSum → maximum sum found so far
+```
+
+For every number:
+
+```text
+add current number to currentSum
+
+update maxSum
+
+if currentSum becomes negative
+    reset currentSum to 0
+```
+
+Why?
+
+Because a negative running sum will only reduce the sum of any future subarray.
+
+Example:
+
+```text
+currentSum = -5
+
+next number = 10
+```
+
+Keeping the previous sum:
+
+```text
+-5 + 10 = 5
+```
+
+Starting fresh:
+
+```text
+10
+```
+
+So carrying `-5` is not useful.
+
+## Pseudocode
+
+```text
+maxSum = Integer.MIN_VALUE
+currentSum = 0
+
+for each num in nums
+
+    currentSum = currentSum + num
+
+    maxSum = max(maxSum, currentSum)
+
+    if currentSum < 0
+        currentSum = 0
+
+return maxSum
+```
+
+## Why Update `maxSum` Before Resetting?
+
+Consider:
+
+```text
+[-5, -2, -8]
+```
+
+All numbers are negative.
+
+If we reset before updating `maxSum`, we may end up considering:
+
+```text
+0
+```
+
+But `0` is not part of the array.
+
+Correct answer:
+
+```text
+-2
+```
+
+Therefore the order should be:
+
+```text
+1. Add current number
+2. Update maxSum
+3. Reset currentSum if negative
+```
+
+## Why Initialize `maxSum` With `Integer.MIN_VALUE`?
+
+Because the array can contain only negative numbers.
+
+Example:
+
+```text
+[-5, -2, -8]
+```
+
+If:
+
+```text
+maxSum = 0
+```
+
+the answer would incorrectly remain:
+
+```text
+0
+```
+
+Instead:
+
+```text
+maxSum = Integer.MIN_VALUE
+```
+
+allows negative values to become the answer.
+
+## Example
+
+```text
+nums = [-2,1,-3,4,-1,2,1,-5,4]
+```
+
+```text
+-2
+currentSum = -2
+maxSum = -2
+reset currentSum = 0
+```
+
+```text
+1
+currentSum = 1
+maxSum = 1
+```
+
+```text
+-3
+currentSum = -2
+maxSum = 1
+reset currentSum = 0
+```
+
+```text
+4
+currentSum = 4
+maxSum = 4
+```
+
+```text
+-1
+currentSum = 3
+maxSum = 4
+```
+
+```text
+2
+currentSum = 5
+maxSum = 5
+```
+
+```text
+1
+currentSum = 6
+maxSum = 6
+```
+
+Best subarray:
+
+```text
+[4, -1, 2, 1]
+```
+
+Answer:
+
+```text
+6
+```
+
+## Complexity
+
+```text
+Time:  O(n)
+Space: O(1)
+```
+
+Only one traversal is required.
+
+Only fixed variables are used:
+
+```text
+currentSum
+maxSum
+```
+
+---
+
+## Main Difference
+
+```text
+Maximum Element
+
+Need largest individual value
+→ Track max
+```
+
+```text
+Maximum Subarray
+
+Need largest sum of contiguous elements
+→ Track running sum
+→ Kadane's Algorithm
+```
+
+### Final Pattern Rule
+
+```text
+Contiguous subarray
++ maximum sum
+→ Think Running Sum / Kadane's Algorithm
+```
+
+```text
+If current running sum becomes negative
+→ discard it
+→ because it cannot help a future subarray
+```

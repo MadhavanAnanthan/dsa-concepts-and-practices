@@ -1,0 +1,397 @@
+1. Core Java fundamentals
+OOP principles
+Encapsulation
+Abstraction
+Inheritance
+Polymorphism
+Interface vs abstract class
+Method overloading vs overriding
+static, final, finally
+Access modifiers
+Object class
+equals() and hashCode()
+== vs equals()
+Immutability
+Creating immutable classes
+String immutability
+String vs StringBuilder vs StringBuffer
+Pass-by-value in Java
+Wrapper classes
+Autoboxing / unboxing
+Enums
+Records
+Generics
+Exceptions
+Checked vs unchecked
+Custom exceptions
+Exception hierarchy
+try/catch/finally
+try-with-resources
+
+2. Collections — very high priority
+
+Know not just usage, but internals + complexity + when to choose each one.
+
+Collection hierarchy
+List
+ArrayList
+LinkedList
+Set
+HashSet
+LinkedHashSet
+TreeSet
+Map
+HashMap
+LinkedHashMap
+TreeMap
+Hashtable
+ConcurrentHashMap
+Queue
+Deque
+PriorityQueue
+
+Especially master:
+
+HashMap internals
+
+Hashing
+Bucket/index calculation
+Collisions
+Linked list
+Red-black tree/treeification
+Resize
+Load factor
+Initial capacity
+equals() / hashCode()
+Mutable keys
+Why HashMap isn't thread-safe
+
+And:
+
+ConcurrentHashMap internals
+
+Java 7 vs Java 8 design
+CAS
+Bucket-level synchronization
+Concurrent reads
+Resize
+Why Collections.synchronizedMap() differs
+Atomic compound operations
+computeIfAbsent()
+putIfAbsent()
+
+3. Concurrency & multithreading — extremely high priority for you
+
+This is one of the areas that can differentiate you.
+
+Fundamentals:
+
+Process vs thread
+Creating threads
+Thread lifecycle
+Thread states
+Context switching
+Race condition
+Critical section
+Thread safety
+Atomicity
+Visibility
+Ordering
+
+Synchronization:
+
+synchronized
+Object monitor
+Intrinsic locks
+synchronized method vs block
+Static synchronization
+Reentrant locking
+Lock contention
+
+Java Memory Model:
+
+JMM
+Happens-before
+Visibility
+Reordering
+Memory barriers
+volatile
+Why volatile doesn't guarantee compound-operation atomicity
+Safe publication
+
+Atomic/CAS:
+
+Compare-And-Set
+AtomicInteger
+AtomicLong
+AtomicReference
+CAS retry loop
+ABA problem
+AtomicStampedReference
+
+Locks:
+
+ReentrantLock
+tryLock()
+ReadWriteLock
+ReentrantReadWriteLock
+StampedLock
+Optimistic reading
+
+Coordination:
+
+wait()
+notify()
+notifyAll()
+CountDownLatch
+CyclicBarrier
+Semaphore
+
+Producer-consumer:
+
+BlockingQueue
+ArrayBlockingQueue
+LinkedBlockingQueue
+
+Concurrency problems:
+
+Deadlock
+Livelock
+Starvation
+Thread contention
+Lost updates
+
+4. Executor framework — very high priority
+Executor
+ExecutorService
+ThreadPoolExecutor
+FixedThreadPool
+CachedThreadPool
+SingleThreadExecutor
+ScheduledExecutorService
+Work queue
+Core pool size
+Maximum pool size
+Keep-alive time
+Rejection policies
+Choosing thread-pool size
+CPU-bound vs I/O-bound workloads
+Thread-pool exhaustion
+
+Better to know:
+
+Callable
+Future
+FutureTask
+CompletionService
+invokeAll()
+graceful shutdown
+shutdown()
+shutdownNow()
+awaitTermination()
+5. CompletableFuture / asynchronous Java
+
+Very useful for senior backend interviews.
+
+CompletableFuture
+supplyAsync()
+runAsync()
+thenApply()
+thenCompose()
+thenCombine()
+allOf()
+anyOf()
+Exception handling
+Default ForkJoinPool
+Custom executors
+Parallel API calls
+Avoiding blocking
+Timeout handling
+6. Java 8+ features
+
+Almost every Java company can touch these.
+
+Lambda expressions
+Functional interfaces
+Predicate
+Function
+Consumer
+Supplier
+Method references
+Streams
+Intermediate vs terminal operations
+map()
+flatMap()
+filter()
+reduce()
+collect()
+groupingBy
+partitioningBy
+Optional
+Date/Time API
+Default/static interface methods
+
+Better to know : Streams specifically:
+
+Lazy evaluation
+Stateful/stateless operations
+Parallel streams
+When not to use parallel streams
+Side effects
+Stream performance
+7. JVM internals — high priority at your experience
+
+You are already studying this, which is good.
+
+Architecture:
+
+JVM vs JRE vs JDK
+ClassLoader subsystem
+Bootstrap / Platform / Application ClassLoaders
+Parent delegation
+Class loading
+Loading
+Linking
+Verification
+Preparation
+Resolution
+Initialization
+
+Runtime memory:
+
+Heap
+Young generation
+Old generation
+Eden
+Survivor spaces
+Thread stacks
+Stack frames
+Local variable table
+Operand stack
+PC register
+Native method stack
+Metaspace
+Code cache
+
+Execution:
+
+Interpreter
+JIT compiler
+Hot methods
+Native machine code
+
+8. Garbage Collection
+What makes an object eligible for GC
+GC roots
+Reachability
+Minor GC
+Major/full GC
+Stop-the-world pauses
+Generational hypothesis
+
+Collectors:
+
+Serial GC
+Parallel GC
+G1 GC
+ZGC
+Shenandoah — conceptually
+
+Especially:
+
+G1 regions
+Young collections
+Concurrent marking
+Mixed collections
+Humongous objects
+
+Senior-level scenarios:
+
+High GC frequency
+Memory pressure
+Long pauses
+Allocation rate
+Object retention
+
+9. Memory/performance/debugging
+
+UST FinX particularly emphasizes this, and it's useful everywhere.
+
+Heap dump
+Thread dump
+Memory leaks
+OutOfMemoryError
+StackOverflowError
+GC logs
+CPU profiling
+Thread contention
+Deadlock analysis
+High CPU
+Excessive object creation
+JVM tuning concepts
+
+Useful tools/concepts:
+
+jstack
+jmap
+jcmd
+JFR
+VisualVM
+heap-dump analysis
+
+You don't need to memorize every JVM flag.
+
+10. Java serialization and object lifecycle
+
+Lower priority, but interviewers sometimes ask.
+
+Serializable
+transient
+serialVersionUID
+Serialization drawbacks
+Java object creation
+Object initialization order
+Static initialization
+Constructor chaining
+Cloning basics
+11. Design principles in Java
+
+For 8+ YOE, don't restrict yourself to syntax.
+
+SOLID
+Composition over inheritance
+Dependency inversion
+Immutability
+Loose coupling
+High cohesion
+
+Common patterns:
+
+Singleton
+Factory
+Builder
+Strategy
+Observer
+Adapter
+Decorator
+Template Method
+
+You should understand where you'd actually use them, rather than memorizing definitions.
+
+12. Modern Java — Java 17/21
+
+Since you're positioning yourself as Java 17/21:
+
+Records
+Sealed classes
+Pattern matching for instanceof
+Pattern matching for switch
+Switch expressions
+Text blocks
+var
+Virtual threads
+Platform threads vs virtual threads
+When virtual threads help
+Why virtual threads don't magically make CPU-bound work faster
+Virtual threads and blocking I/O
+Structured concurrency — conceptual understanding
