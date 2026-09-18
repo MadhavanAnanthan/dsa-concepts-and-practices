@@ -1,0 +1,699 @@
+# Strategy Pattern
+
+## Classification
+
+```text
+Gang of Four (GoF) Design Pattern
+Category: Behavioral Pattern
+```
+
+Behavioral patterns focus on:
+
+> How objects collaborate and execute behavior.
+
+Strategy specifically addresses:
+
+> "How can we switch between different behaviors/algorithms without modifying existing code?"
+
+---
+
+# Why Strategy Pattern Was Introduced?
+
+Consider a payment service:
+
+```java
+if(type.equals("UPI")) {
+   ...
+}
+else if(type.equals("CARD")) {
+   ...
+}
+else if(type.equals("APPLE_PAY")) {
+   ...
+}
+```
+
+Initially fine.
+
+As business grows:
+
+```java
+if(...)
+else if(...)
+else if(...)
+else if(...)
+```
+
+## Typical Symptoms (Most Important First)
+
+### 1. Multiple Responsibilities In One Class ⭐
+
+```java
+PaymentService
+```
+
+owns:
+
+- UPI payment logic
+- Card payment logic
+- Wallet payment logic
+- Apple Pay logic
+
+Each payment type changes for different reasons.
+
+This is usually the biggest design smell and often the primary reason Strategy emerges.
+
+---
+
+### 2. Tight Coupling
+
+```java
+PaymentService
+```
+
+must know every payment implementation.
+
+Whenever a new payment method is introduced, the service becomes more aware of internal details.
+
+---
+
+### 3. Large Conditional Logic
+
+```java
+if(...)
+else if(...)
+else if(...)
+else if(...)
+```
+
+Decision logic keeps growing as new behaviors are added.
+
+This is usually the most visible symptom.
+
+---
+
+### 4. Difficult Testing
+
+Testing one behavior often requires navigating through unrelated behaviors living in the same class.
+
+Each payment implementation cannot be tested independently.
+
+---
+
+## Natural Consequence
+
+Because of the above problems:
+
+- Existing code gets modified frequently
+- Regression risk increases
+- OCP gets violated
+
+Strategy Pattern addresses these issues by moving each behavior into its own class and using polymorphism for execution.
+```
+
+# Core Idea
+
+Encapsulate each behavior into its own class and expose a common contract.
+
+Instead of:
+
+```java
+if(paymentType == UPI)
+```
+
+Use:
+
+```java
+PaymentStrategy strategy
+```
+
+and let polymorphism decide the implementation.
+
+---
+
+# Structure
+
+```java
+interface PaymentStrategy {
+    void pay();
+}
+```
+
+Implementations:
+
+```java
+UpiStrategy
+CardStrategy
+ApplePayStrategy
+GooglePayStrategy
+```
+
+Usage:
+
+```java
+PaymentStrategy strategy =
+       strategyMap.get(type);
+
+strategy.pay();
+```
+
+---
+
+# Runtime Behavior Selection
+
+A common misconception:
+
+> Strategy enables runtime behavior selection.
+
+Many developers think:
+
+```text
+If-Else does not support runtime selection.
+```
+
+Wrong.
+
+This also happens at runtime:
+
+```java
+if(type.equals("UPI"))
+```
+
+The real benefit is not runtime selection.
+
+The real benefit is:
+
+```text
+Behavior selection through polymorphism
+instead of large conditional logic.
+```
+
+---
+
+# How Runtime Decision Happens?
+
+User selects:
+
+```text
+APPLE_PAY
+```
+
+Request:
+
+```json
+{
+  "paymentMethod": "APPLE_PAY"
+}
+```
+
+Lookup:
+
+```java
+PaymentStrategy strategy =
+      strategyMap.get("APPLE_PAY");
+```
+
+Result:
+
+```java
+ApplePayStrategy
+```
+
+Execution:
+
+```java
+strategy.pay();
+```
+
+JVM performs dynamic dispatch and invokes the correct implementation.
+
+---
+
+# Main Problem It Solves
+
+Before:
+
+```java
+Decision Logic
++
+Business Logic
+```
+
+mixed together.
+
+Example:
+
+```java
+if(type.equals("UPI")) {
+    // UPI implementation
+}
+
+if(type.equals("CARD")) {
+    // CARD implementation
+}
+```
+
+After:
+
+```java
+strategy.pay();
+```
+
+Decision and implementation become separate concerns.
+
+---
+
+# SOLID Principles Involved
+
+## SRP (Single Responsibility Principle)
+
+Before:
+
+```java
+PaymentService
+```
+
+owns:
+
+- UPI payment
+- Card payment
+- Wallet payment
+- Apple Pay payment
+
+Multiple responsibilities.
+
+After:
+
+```java
+UpiStrategy
+```
+
+owns only UPI logic.
+
+```java
+CardStrategy
+```
+
+owns only Card logic.
+
+Each class has one reason to change.
+
+✅ Better SRP
+
+---
+
+## OCP (Open Closed Principle)
+
+Open for extension.
+
+Closed for modification.
+
+Before:
+
+```java
+if(...)
+else if(...)
+else if(...)
+```
+
+New payment?
+
+Modify existing code.
+
+After:
+
+```java
+class GooglePayStrategy
+     implements PaymentStrategy
+```
+
+Add new behavior.
+
+Existing tested implementations remain untouched.
+
+✅ Better OCP
+
+---
+
+# A Very Important Realization
+
+OCP does NOT mean:
+
+```text
+No code changes anywhere.
+```
+
+Some registration/configuration change is expected.
+
+Example:
+
+```java
+strategies.put(
+  "GOOGLE_PAY",
+  new GooglePayStrategy()
+);
+```
+
+or
+
+```java
+@Component
+class GooglePayStrategy
+```
+
+This is acceptable.
+
+Why?
+
+Because business logic remains unchanged.
+
+---
+
+# Spring Configuration Analogy
+
+Suppose database URL changes.
+
+```properties
+spring.datasource.url=db-server-1
+```
+
+becomes
+
+```properties
+spring.datasource.url=db-server-2
+```
+
+Did application logic change?
+
+❌ No
+
+Did Repository code change?
+
+❌ No
+
+Did Service code change?
+
+❌ No
+
+Only configuration changed.
+
+Similarly:
+
+```java
+GooglePayStrategy
+```
+
+registration is considered an extension/configuration change.
+
+Not a business logic modification.
+
+---
+
+# Extension vs Modification
+
+This is the heart of OCP.
+
+Bad:
+
+```java
+Modify tested code repeatedly.
+```
+
+Example:
+
+```java
+if(type.equals("GOOGLE_PAY"))
+```
+
+added inside existing service.
+
+Good:
+
+```java
+Add new strategy class.
+```
+
+Example:
+
+```java
+GooglePayStrategy
+```
+
+Existing tested behavior remains untouched.
+
+---
+
+# Loose Coupling
+
+Before:
+
+```java
+PaymentService
+```
+
+knows every payment implementation.
+
+After:
+
+```java
+PaymentService
+```
+
+knows only:
+
+```java
+PaymentStrategy
+```
+
+It depends on an abstraction.
+
+Not a concrete implementation.
+
+✅ Loose coupling
+
+✅ Easier testing
+
+✅ Easier extension
+
+---
+
+# Polymorphism Is The Foundation
+
+Strategy Pattern heavily relies on:
+
+```text
+Polymorphism
+```
+
+Example:
+
+```java
+PaymentStrategy strategy
+```
+
+can point to:
+
+```java
+new UpiStrategy()
+```
+
+or
+
+```java
+new CardStrategy()
+```
+
+or
+
+```java
+new ApplePayStrategy()
+```
+
+At runtime JVM calls the appropriate implementation.
+
+This is dynamic dispatch.
+
+---
+
+# Real World Examples
+
+## Payments
+
+```text
+UPI
+Card
+Wallet
+Apple Pay
+Google Pay
+```
+
+---
+
+## Notifications
+
+```text
+Email
+SMS
+Teams
+Slack
+WhatsApp
+```
+
+---
+
+## Authentication
+
+Spring Security providers:
+
+```text
+JWT
+LDAP
+Database
+OAuth
+```
+
+Each can be viewed as a strategy.
+
+---
+
+## Compression
+
+```text
+ZIP
+RAR
+7-Zip
+```
+
+Different compression strategies.
+
+---
+
+# Common Misconceptions
+
+## Myth 1
+
+```text
+Strategy exists to remove all if-else statements.
+```
+
+False.
+
+A small if condition is perfectly fine.
+
+Purpose is:
+
+```text
+Encapsulate changing behavior.
+```
+
+---
+
+## Myth 2
+
+```text
+Strategy is mainly for performance.
+```
+
+False.
+
+Purpose is maintainability and extensibility.
+
+---
+
+## Myth 3
+
+```text
+Strategy completely eliminates configuration changes.
+```
+
+False.
+
+Extension/configuration changes are acceptable.
+
+Business logic modification is what we try to avoid.
+
+---
+
+# When To Use Strategy?
+
+Use when:
+
+✅ Multiple implementations exist
+
+✅ Behavior varies
+
+✅ New behaviors will be added frequently
+
+✅ Large if-else blocks are growing
+
+✅ Runtime behavior selection is required
+
+✅ OCP and SRP improvements are desired
+
+---
+
+# When Not To Use Strategy?
+
+Do not introduce Strategy for:
+
+```java
+if(user == null)
+```
+
+or
+
+```java
+if(amount <= 0)
+```
+
+Small conditional logic is perfectly acceptable.
+
+Use Strategy when behavior variation is expected to grow.
+
+---
+
+# Interview Definition
+
+> Strategy Pattern is a GoF Behavioral Design Pattern that encapsulates a family of interchangeable algorithms or behaviors behind a common interface. It relies on polymorphism to select the appropriate behavior at runtime, improves SRP by separating responsibilities, supports OCP through extension rather than modification, reduces large conditional logic, and keeps business logic loosely coupled from concrete implementations.
+
+---
+
+# Quick Revision (30 Seconds)
+
+```text
+Category:
+GoF Behavioral Pattern
+
+Purpose:
+Encapsulate varying behavior
+
+Built On:
+Polymorphism
+
+Benefits:
+✅ SRP
+✅ OCP
+✅ Loose Coupling
+✅ Easy Testing
+✅ Extensibility
+
+Main Idea:
+Extension > Modification
+
+Accepted:
+Configuration change
+
+Avoid:
+Repeated modifications to tested business logic
+
+Examples:
+Payment
+Notification
+Authentication
+Compression
+
+Memory Trick:
+
+Strategy =
+"What should I DO?"
+```
