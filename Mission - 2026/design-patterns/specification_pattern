@@ -1,0 +1,837 @@
+# Specification Pattern
+
+## Pattern Classification
+
+```text
+Origin:
+Enterprise Design Pattern
+```
+
+Unlike Strategy, Factory, Observer, etc., **Specification is NOT one of the original GoF patterns**.
+
+It became popular through:
+
+```text
+Domain-Driven Design (DDD)
+```
+
+and enterprise application design.
+
+Today it is widely used in:
+
+- Spring Data JPA Specifications
+- Dynamic Search APIs
+- Rule Engines
+- Eligibility Checks
+- Filters & Query Builders
+
+---
+
+## Category
+
+```text
+Behavioral Pattern
+```
+
+Why?
+
+Because it focuses on:
+
+```text
+Evaluating business rules and decisions
+```
+
+rather than:
+
+```text
+Creating Objects
+```
+
+or
+
+```text
+Structuring Objects
+```
+
+---
+
+# Why Specification Pattern Was Introduced?
+
+Consider filtering applications in HawkEye.
+
+Initially:
+
+```java
+if(status.equals("RED")
+   && category.equals("API")
+   && region.equals("US")) {
+
+}
+```
+
+Business changes:
+
+```text
+Status = RED
+AND Environment = PROD
+```
+
+Next month:
+
+```text
+(Status = RED OR Status = YELLOW)
+AND Category = API
+```
+
+Next quarter:
+
+```text
+Status = RED
+AND Region IN (US, INDIA)
+AND Environment = PROD
+```
+
+The filtering logic keeps growing.
+
+---
+
+## Typical Symptoms (Most Important First)
+
+### 1. Business Rules Mixed Into One Place ⭐
+
+A service suddenly owns:
+
+- Status rule
+- Category rule
+- Region rule
+- Environment rule
+
+Many independent business rules are mixed together.
+
+---
+
+### 2. Large Conditional Logic
+
+```java
+if(...)
+if(...)
+if(...)
+```
+
+or
+
+```java
+if(a && b && c)
+```
+
+becomes
+
+```java
+if((a || b) && c && d)
+```
+
+which becomes hard to read and maintain.
+
+---
+
+### 3. Business Rules Change Frequently
+
+Today:
+
+```text
+Status = RED
+```
+
+Tomorrow:
+
+```text
+Status = RED AND PROD
+```
+
+Next week:
+
+```text
+Status = RED OR YELLOW
+```
+
+Requirements evolve continuously.
+
+---
+
+### 4. Rules Need Reuse
+
+The same rule may be used in:
+
+- Search API
+- Dashboard
+- Export Report
+- Alert Engine
+
+Copy-pasting conditions violates DRY.
+
+---
+
+### 5. Difficult Testing
+
+Testing individual rules becomes harder when all conditions are buried inside large methods.
+
+---
+
+# Core Idea
+
+Encapsulate each business rule into its own specification object.
+
+Instead of:
+
+```java
+if(status.equals("RED"))
+```
+
+Create:
+
+```java
+RedStatusSpecification
+```
+
+Instead of:
+
+```java
+if(category.equals("API"))
+```
+
+Create:
+
+```java
+ApiCategorySpecification
+```
+
+Each rule becomes an independent object.
+
+---
+
+# Structure
+
+## Specification Contract
+
+```java
+public interface Specification<T> {
+
+    boolean isSatisfiedBy(T object);
+}
+```
+
+---
+
+## Individual Specifications
+
+```java
+class RedStatusSpecification
+```
+
+```java
+class ApiCategorySpecification
+```
+
+```java
+class ProdEnvironmentSpecification
+```
+
+Each class owns one business rule.
+
+---
+
+# Example
+
+Application:
+
+```java
+App {
+   status
+   category
+   region
+}
+```
+
+Specification:
+
+```java
+class RedStatusSpecification
+     implements Specification<App> {
+
+   public boolean isSatisfiedBy(App app) {
+
+       return "RED".equals(
+                 app.getStatus());
+   }
+}
+```
+
+Usage:
+
+```java
+spec.isSatisfiedBy(app);
+```
+
+---
+
+# Combining Specifications
+
+One of the biggest strengths of this pattern.
+
+Rules can be composed.
+
+### AND
+
+```java
+spec1.and(spec2)
+```
+
+Meaning:
+
+```text
+Rule 1 AND Rule 2
+```
+
+---
+
+### OR
+
+```java
+spec1.or(spec2)
+```
+
+Meaning:
+
+```text
+Rule 1 OR Rule 2
+```
+
+---
+
+### NOT
+
+```java
+spec.not()
+```
+
+Meaning:
+
+```text
+NOT Rule
+```
+
+---
+
+Example:
+
+```java
+statusSpec
+    .and(categorySpec)
+    .and(regionSpec)
+```
+
+This represents:
+
+```text
+Status = RED
+AND Category = API
+AND Region = US
+```
+
+---
+
+# Main Problem It Solves
+
+Before:
+
+```java
+if(a && b && c && d)
+```
+
+Business rules become harder to understand.
+
+After:
+
+```java
+statusSpec
+    .and(categorySpec)
+    .and(regionSpec)
+```
+
+Rules become:
+
+✅ Readable
+
+✅ Reusable
+
+✅ Testable
+
+✅ Composable
+
+---
+
+# SOLID Principles Involved
+
+## SRP (Single Responsibility Principle)
+
+Before:
+
+```java
+AppService
+```
+
+owns all filtering logic.
+
+After:
+
+```java
+StatusSpecification
+```
+
+owns status rule.
+
+```java
+CategorySpecification
+```
+
+owns category rule.
+
+```java
+RegionSpecification
+```
+
+owns region rule.
+
+Each rule has one reason to change.
+
+✅ Better SRP
+
+---
+
+## OCP (Open Closed Principle)
+
+New rule required?
+
+Before:
+
+```java
+Modify existing if conditions.
+```
+
+After:
+
+```java
+Create new specification.
+```
+
+Example:
+
+```java
+CriticalAppSpecification
+```
+
+Existing rules remain untouched.
+
+✅ Better OCP
+
+---
+
+# Extension vs Modification
+
+This is the heart of Specification Pattern.
+
+Bad:
+
+```java
+if(status.equals("RED")
+    && category.equals("API")
+    && region.equals("US")
+    && environment.equals("PROD"))
+```
+
+Every new rule modifies existing logic.
+
+---
+
+Good:
+
+```java
+statusSpec
+   .and(categorySpec)
+   .and(regionSpec)
+   .and(prodSpec)
+```
+
+Existing rules stay unchanged.
+
+A new specification is simply added.
+
+---
+
+# Does Specification Improve Performance?
+
+## Common Misconception
+
+```text
+Specification makes filtering faster.
+```
+
+Not necessarily.
+
+The primary purpose is:
+
+```text
+Maintainability
+```
+
+not:
+
+```text
+Performance
+```
+
+---
+
+## Real Benefit
+
+Specification improves:
+
+✅ Readability
+
+✅ Reusability
+
+✅ Extensibility
+
+✅ Testability
+
+✅ Dynamic Rule Composition
+
+---
+
+## Where Performance Can Improve
+
+Spring Data JPA Example:
+
+```java
+Specification<Employee>
+```
+
+can generate:
+
+```sql
+WHERE status='RED'
+AND category='API'
+```
+
+Database performs filtering.
+
+Indexes can be used.
+
+Query optimization can be used.
+
+However:
+
+> The performance gain comes from the database query execution, not from the Specification Pattern itself.
+
+---
+
+# HawkEye Real-World Example
+
+Suppose filter metadata is stored in MongoDB.
+
+```json
+{
+  "field": "status",
+  "operator": "EQUALS",
+  "value": "RED"
+}
+```
+
+Tomorrow:
+
+```json
+{
+  "field": "environment",
+  "operator": "EQUALS",
+  "value": "PROD"
+}
+```
+
+Instead of:
+
+```java
+if(field.equals("status"))
+```
+
+```java
+if(field.equals("environment"))
+```
+
+Create specifications dynamically.
+
+Benefits:
+
+✅ Dynamic filters
+
+✅ Metadata-driven filtering
+
+✅ Less code modification
+
+✅ New rules added through extension
+
+This is an excellent HawkEye use case.
+
+---
+
+# Loose Coupling
+
+Before:
+
+```java
+AppService
+```
+
+knows all business rules.
+
+After:
+
+```java
+AppService
+```
+
+depends only on:
+
+```java
+Specification<App>
+```
+
+Rules become independent.
+
+✅ Loose Coupling
+
+✅ Reusable Components
+
+---
+
+# Real World Examples
+
+## Product Search
+
+```text
+Price < 1000
+Brand = Samsung
+Rating > 4
+```
+
+---
+
+## Loan Eligibility
+
+```text
+Income > X
+Credit Score > Y
+Age > 18
+```
+
+---
+
+## User Access Rules
+
+```text
+Role = ADMIN
+Region = US
+Department = Operations
+```
+
+---
+
+## HawkEye Filters
+
+```text
+Status = RED
+Region = US
+Environment = PROD
+Category = API
+```
+
+---
+
+# Strategy vs Specification
+
+## Strategy
+
+```text
+"What should I DO?"
+```
+
+Focus:
+
+```text
+Behavior / Action
+```
+
+Examples:
+
+- Payment
+- Notification
+- Authentication
+
+---
+
+## Specification
+
+```text
+"Does it MATCH?"
+```
+
+Focus:
+
+```text
+Rule / Condition / Filter
+```
+
+Examples:
+
+- Search Filters
+- Eligibility Rules
+- Dynamic Queries
+- Access Policies
+
+---
+
+# Common Misconceptions
+
+## Myth 1
+
+```text
+Specification improves filtering performance.
+```
+
+False.
+
+Main goal:
+
+```text
+Maintainability and extensibility.
+```
+
+---
+
+## Myth 2
+
+```text
+Specification is only for databases.
+```
+
+False.
+
+It can be used for any business rule evaluation.
+
+---
+
+## Myth 3
+
+```text
+Specification removes all if statements.
+```
+
+False.
+
+It encapsulates business rules into dedicated objects.
+
+---
+
+# When To Use Specification?
+
+Use when:
+
+✅ Business rules change frequently
+
+✅ Dynamic filtering is required
+
+✅ Conditions need reuse
+
+✅ Rules must be combined dynamically
+
+✅ Large conditional blocks are growing
+
+✅ OCP and SRP improvements are desired
+
+---
+
+# When Not To Use Specification?
+
+Avoid for simple conditions.
+
+Example:
+
+```java
+if(user == null)
+```
+
+or
+
+```java
+if(amount <= 0)
+```
+
+Simple conditions do not need a specification object.
+
+---
+
+# Interview Definition
+
+> Specification Pattern is a behavioral enterprise design pattern that encapsulates business rules into reusable objects. It allows rules to be combined using AND, OR, and NOT operations, improving maintainability, extensibility, SRP, OCP, readability, and dynamic filtering capabilities without relying on large conditional blocks.
+
+---
+
+# Quick Revision (30 Seconds)
+
+```text
+Pattern:
+Specification
+
+Origin:
+DDD / Enterprise Pattern
+(Not a GoF Pattern)
+
+Category:
+Behavioral
+
+Purpose:
+Encapsulate business rules
+
+Built On:
+Composition
+
+SOLID:
+✅ SRP
+✅ OCP
+
+Benefits:
+✅ Reusable Rules
+✅ Dynamic Filtering
+✅ Loose Coupling
+✅ Easy Testing
+✅ Readability
+
+Main Idea:
+Business Rules = Objects
+
+Acceptable:
+Adding New Specifications
+
+Avoid:
+Growing Conditional Logic
+
+Examples:
+Product Search
+Loan Eligibility
+Access Rules
+HawkEye Dynamic Filters
+
+Memory Trick:
+
+Specification =
+"Does it MATCH?"
+```
