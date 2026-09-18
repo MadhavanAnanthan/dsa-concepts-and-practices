@@ -845,3 +845,31 @@ If current running sum becomes negative
 → discard it
 → because it cannot help a future subarray
 ```
+## 387. First Unique Character in a String
+
+Problem: Find the index of the first non-repeating character.
+
+Pattern: Frequency Counting + Second Traversal
+
+Rules:
+
+- Count frequency of each character first.
+- Since input is only `a-z`, use `int[26]`.
+- Character index → `c - 'a'`
+- Traverse the original string again from left to right.
+- If frequency of current character is `1` → return its index.
+- If no unique character exists → return `-1`.
+
+Pseudocode:
+
+```text
+create frequency array of size 26
+
+for each character c:
+    frequency[c - 'a']++
+
+for i from 0 to n - 1:
+    if frequency[s[i] - 'a'] == 1:
+        return i
+
+return -1
