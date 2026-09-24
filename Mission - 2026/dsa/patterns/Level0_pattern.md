@@ -81,6 +81,35 @@ Sorted array + need pair whose sum = target + constant extra space
 → `left = 0`, `right = n - 1`
 → Use the sum to decide which pointer to move.
 
+## Single Number - XOR
+
+Problem: Find the element that appears only once when every other element appears twice.
+
+Pattern: XOR / Bit Manipulation
+
+Rules:
+
+- `a ^ a = 0`
+- `a ^ 0 = a`
+- Duplicate values cancel each other.
+- The remaining value is the single number.
+
+Pseudocode:
+
+```text
+xor = 0
+
+for each number in array
+    xor = xor ^ number
+
+return xor
+```
+
+Time: `O(n)`  
+Space: `O(1)`
+
+Remember: **Pairs cancel using XOR; unique value remains.**
+
 
 ## Find Maximum in Array
 
