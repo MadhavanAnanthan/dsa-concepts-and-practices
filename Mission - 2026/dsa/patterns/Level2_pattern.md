@@ -435,3 +435,353 @@ Sort each row once
 Key insight:
 Repeated maximum search -> consider sorting once.
 ```
+# 56. Merge Intervals
+
+## Problem Idea
+
+Each row represents one interval:
+
+```text
+[start, end]
+```
+
+If intervals overlap, merge them.
+
+Example:
+
+```text
+[1,3] and [2,6]
+```
+
+They overlap because:
+
+```text
+nextStart <= currentEnd
+2 <= 3
+```
+
+Merged:
+
+```text
+[1,6]
+```
+
+## Pattern
+
+```text
+Sorting + Interval Traversal + Merge
+```
+
+## Main Idea
+
+1. Sort rows by start value (`interval[0]`).
+2. Keep the first interval as `currentRow`.
+3. Compare `currentRow` with the next interval.
+4. If `currentRowEnd >= nextRowStart`, they overlap.
+5. Merge by updating:
+
+```text
+currentRowEnd = max(currentRowEnd, nextRowEnd)
+```
+
+6. If they do not overlap:
+    - store `currentRow` in result
+    - move `currentRow` to the next interval
+7. Maintain a separate `resultIndex`.
+8. After the loop, store the final `currentRow`.
+9. Return only the inserted portion of result.
+
+## Why Sort Rows?
+
+Example:
+
+```text
+Before:
+[[4,7],[1,4],[8,10]]
+
+After sorting by start:
+[[1,4],[4,7],[8,10]]
+```
+
+Do not sort values inside each row.
+
+Java:
+
+```java
+Arrays.sort(intervals, (a, b) -> Integer.compare(a[0], b[0]));
+```
+
+## Overlap Condition
+
+```text
+currentRowEnd >= nextRowStart
+```
+
+Example:
+
+```text
+current = [1,3]
+next    = [2,6]
+
+3 >= 2
+```
+
+So merge:
+
+```text
+[1,3] + [2,6]
+→ [1,6]
+```
+
+Use:
+
+```java
+currentRow[1] = Math.max(currentRowEnd, nextRowEnd);
+```
+
+Important:
+
+```text
+[1,10] and [2,5]
+```
+
+must become:
+
+```text
+[1,10]
+```
+
+so use `max(currentEnd, nextEnd)`.
+
+## If There Is No Overlap
+
+Example:
+
+```text
+current = [1,6]
+next    = [8,10]
+
+6 >= 8
+false
+```
+
+Then:
+
+```text
+store [1,6]
+currentRow = [8,10]
+```
+
+## Input Index vs Result Index
+
+They are different.
+
+Example:
+
+```text
+Input:
+[[1,3],[2,6],[8,10],[15,18]]
+
+Result:
+[[1,6],[8,10],[15,18]]
+```
+
+Input size = 4  
+Result size = 3
+
+So maintain:
+
+```text
+resultIndex
+```
+
+separately.
+
+## Pseudocode
+
+```text
+sort intervals by start
+
+result = array with input size
+resultIndex = 0
+
+currentRow = first interval
+
+for each next interval:
+
+    currentEnd = currentRow.end
+    nextStart = next.start
+    nextEnd = next.end
+
+    if currentEnd >= nextStart:
+
+        currentRow.end =
+            max(currentEnd, nextEnd)
+
+    else:
+
+        result[resultIndex] = currentRow
+        resultIndex++
+
+        currentRow = next interval
+
+store final currentRow
+
+return only inserted part of result
+```
+
+## Java Code
+
+```java
+import java.util.Arrays;
+
+class Solution {
+    public int[][] merge(int[][] intervals) {
+
+        int[][] result = new int[intervals.length][2];
+        int resultIndex = 0;
+
+        Arrays.sort(
+            intervals,
+            (a, b) -> Integer.compare(a[0], b[0])
+        );
+
+        int[] currentRow = intervals[0];
+
+        for (int nextRow = 1; nextRow < intervals.length; nextRow++) {
+
+            int currentRowEnd = currentRow[1];
+            int nextRowStart = intervals[nextRow][0];
+            int nextRowEnd = intervals[nextRow][1];
+
+            if (currentRowEnd >= nextRowStart) {
+
+                currentRow[1] =
+                    Math.max(currentRowEnd, nextRowEnd);
+
+            } else {
+
+                result[resultIndex] = currentRow;
+                resultIndex++;
+
+                currentRow = intervals[nextRow];
+            }
+        }
+
+        result[resultIndex] = currentRow;
+
+        return Arrays.copyOf(result, resultIndex + 1);
+    }
+}
+```
+
+## Example Walkthrough
+
+Input:
+
+```text
+[[1,3],[2,6],[8,10],[15,18]]
+```
+
+Start:
+
+```text
+currentRow = [1,3]
+```
+
+Compare:
+
+```text
+[1,3] with [2,6]
+
+3 >= 2
+→ overlap
+→ currentRow = [1,6]
+```
+
+Next:
+
+```text
+[1,6] with [8,10]
+
+6 >= 8
+→ false
+→ store [1,6]
+→ currentRow = [8,10]
+```
+
+Next:
+
+```text
+[8,10] with [15,18]
+
+10 >= 15
+→ false
+→ store [8,10]
+→ currentRow = [15,18]
+```
+
+After loop:
+
+```text
+store [15,18]
+```
+
+Result:
+
+```text
+[[1,6],[8,10],[15,18]]
+```
+
+## Complexity
+
+Let `N` = number of intervals.
+
+```text
+Sorting: O(N log N)
+Traversal: O(N)
+
+Overall Time: O(N log N)
+Space: O(N) for result
+```
+
+## Mistakes / Learnings
+
+- Sort rows by `interval[0]`, not values inside each row.
+- No inner column loop is required because each interval is always `[start, end]`.
+- Overlap condition after sorting:
+
+```text
+currentEnd >= nextStart
+```
+
+- When overlapping, keep the current start and update only the end.
+- Use `max(currentEnd, nextEnd)`.
+- When not overlapping, store `currentRow` and move to `nextRow`.
+- Maintain a separate `resultIndex`.
+- Return only the inserted portion of result.
+
+## Short Remember Rule
+
+```text
+Sort by start
+
+current = first interval
+
+For every next interval:
+
+    if current.end >= next.start
+        current.end = max(current.end, next.end)
+
+    else
+        store current
+        current = next
+
+store final current
+```
+
+## Takeaway
+
+```text
+Merge Overlapping Intervals - Identified that currentRow end needs to be compared with nextRow start. Without sorting rows by start value, comparing intervals becomes difficult, so sort the rows, not the columns. If currentRow end >= nextRow start, merge the intervals by keeping the current start and updating the end with max(currentEnd, nextEnd). If they do not overlap, store the currentRow in result and move currentRow to nextRow. Maintain a separate result index because input index and result index are different. Return only the inserted portion of the result array.
+```
