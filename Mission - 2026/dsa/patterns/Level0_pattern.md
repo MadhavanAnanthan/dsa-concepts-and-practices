@@ -1,7 +1,7 @@
 ## Pair Sum / Two Sum
 
 Pattern: Hashing / Complement
-
+Refer - sumElementToMeetTarget.md to know more about 2, 3, 4 sum problems.
 ### Brute Force
 
 * Check every pair using 2 loops.
@@ -611,6 +611,7 @@ Left end  → |-7| = 7
 Right end → |11| = 11
 
 ---
+```
 
 # 53. Maximum Subarray
 
