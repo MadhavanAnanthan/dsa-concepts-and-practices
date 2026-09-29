@@ -350,8 +350,9 @@ If target is found:
 - return middle
 
 If target is not found:
-- when loop ends, `start` is the insertion position.
+- when loop ends, `start` is the insertion position. Because if nothing matches start and end will be on same position, and start will be the first index where target can be inserted even for right side.
 
+- If target is not found,SIMPLE - return left, because left ends at the insertion position.
 Time: O(log n)
 Space: O(1)
 

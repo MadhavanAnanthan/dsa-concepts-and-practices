@@ -4,7 +4,10 @@
     <option name="selectedModelId" value="auto" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5bb84fcf-40eb-4fb6-851a-ce2494c24100" name="Changes" comment="" />
+    <list default="true" id="5bb84fcf-40eb-4fb6-851a-ce2494c24100" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Mission - 2026/dsa/patterns/Level0_pattern.md" beforeDir="false" afterPath="$PROJECT_DIR$/Mission - 2026/dsa/patterns/Level0_pattern.md" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -55,7 +58,7 @@
     &quot;copilot.chat.legacySessionMetadata.migrated&quot;: &quot;true&quot;,
     &quot;git-widget-placeholder&quot;: &quot;main&quot;,
     &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/WorkSpace/IntelliJ/dsa-concepts-and-practices/Mission - 2026&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/WorkSpace/IntelliJ/dsa-concepts-and-practices/Mission - 2026/dsa/problems&quot;,
     &quot;node.js.detected.package.jshint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.jshint&quot;: &quot;&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
@@ -64,6 +67,7 @@
 }</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\WorkSpace\IntelliJ\dsa-concepts-and-practices\Mission - 2026\dsa\problems" />
       <recent name="C:\WorkSpace\IntelliJ\dsa-concepts-and-practices\Mission - 2026" />
       <recent name="C:\WorkSpace\IntelliJ\dsa-concepts-and-practices\Mission - 2026\dsa\concepts" />
       <recent name="C:\WorkSpace\IntelliJ\dsa-concepts-and-practices\Mission - 2025\Java-Knowledge-Base\foundation\Core Fundamentals" />
