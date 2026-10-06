@@ -921,3 +921,164 @@ The key is:
 
 Time: `O(log n)`  
 Space: `O(1)`
+
+# 540. Single Element in a Sorted Array
+
+## Approach 1: Linear Scan — O(n)
+
+### Idea
+The array is sorted and every value appears exactly twice except one value.
+
+Use even and odd indexes as pairs:
+- If the index is even, keep that value for comparison.
+- If the next index is odd, compare it with the previous even-index value.
+- If they do not match, the previous even-index value is the single element.
+- If all pairs match, the final stored value is the single element.
+
+### Pseudocode
+```text
+previousValue = nums[0]
+
+for current from 1 to nums.length - 1:
+    if current is even:
+        previousValue = nums[current]
+    else:
+        if previousValue != nums[current]:
+            return previousValue
+
+return previousValue
+```
+
+### Java
+```java
+class Solution {
+    public int singleNonDuplicate(int[] nums) {
+        int previousValue = nums[0];
+
+        for (int current = 1; current < nums.length; current++) {
+            if (current % 2 == 0) {
+                previousValue = nums[current];
+            } else {
+                if (previousValue != nums[current]) {
+                    return previousValue;
+                }
+            }
+        }
+
+        return previousValue;
+    }
+}
+```
+
+### Complexity
+- Time: `O(n)`
+- Space: `O(1)`
+
+---
+
+## Approach 2: Binary Search — O(log n)
+
+### Main Observation
+Before the single element, pairs follow the normal index pattern:
+
+```text
+even index -> matches next odd index
+```
+
+Example:
+
+```text
+index:  0 1 2 3 4 5
+value:  1 1 2 2 3 3
+```
+
+After the single element appears, the pair alignment shifts.
+
+So during binary search:
+- If `middle` is even, compare `nums[middle]` with `nums[middle + 1]`.
+- If `middle` is odd, compare `nums[middle]` with `nums[middle - 1]`.
+
+### Decision
+If the expected pair matches:
+- The pair structure is still correct.
+- `middle` belongs to a valid pair.
+- The single element must be on the right.
+- Use:
+
+```java
+left = middle + 1;
+```
+
+If the expected pair does not match:
+- The pair structure has already broken.
+- The single element is either at `middle` or somewhere on the left.
+- Keep `middle` in the search range.
+- Use:
+
+```java
+right = middle;
+```
+
+### Boundary Safety
+With:
+
+```java
+while (left < right)
+```
+
+the comparisons are safe:
+- Even `middle` can safely access `middle + 1`.
+- Odd `middle` can safely access `middle - 1`.
+- No separate boundary check is required.
+
+### Pseudocode
+```text
+left = 0
+right = nums.length - 1
+
+while left < right:
+    middle = left + (right - left) / 2
+
+    if middle is even and nums[middle] == nums[middle + 1]:
+        left = middle + 1
+    else if middle is odd and nums[middle] == nums[middle - 1]:
+        left = middle + 1
+    else:
+        right = middle
+
+return nums[left]
+```
+
+### Java
+```java
+class Solution {
+    public int singleNonDuplicate(int[] nums) {
+        int left = 0;
+        int right = nums.length - 1;
+
+        while (left < right) {
+            int middle = left + (right - left) / 2;
+
+            if ((middle % 2 == 0 && nums[middle] == nums[middle + 1]) ||
+                (middle % 2 == 1 && nums[middle] == nums[middle - 1])) {
+
+                left = middle + 1;
+            } else {
+                right = middle;
+            }
+        }
+
+        return nums[left];
+    }
+}
+```
+
+### Complexity
+- Time: `O(log n)`
+- Space: `O(1)`
+
+---
+
+## Final Takeaway
+
+First solved in `O(n)` using a very simple even/odd index approach. Then used the same pairing idea with binary search. If `middle` is even, compare with the next value; if `middle` is odd, compare with the previous value. If the pair matches, the single element is on the right, so use `left = middle + 1`. If the pair does not match, the single element is at `middle` or on the left, so use `right = middle`.
