@@ -1,0 +1,1 @@
+1. if a loop has another loop inside it, the time complexity is O(n^2), so a loop has a substring inside it, the time complexity is O(n^2). - LC1903
