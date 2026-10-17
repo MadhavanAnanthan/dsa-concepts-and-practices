@@ -208,3 +208,200 @@ num.charAt(index) % 2 != 0         // Works for digit chars
 5. For numeric strings, process individual digits without converting the entire String into an integer.
 
 **Revision one-liner:** Scan right to left, find the rightmost odd digit, and return the prefix using a single `substring(0, index + 1)`. TC O(n), working SC O(1), output-inclusive SC O(n).
+
+# 205. Isomorphic Strings
+
+**Problem:** [LeetCode 205](https://leetcode.com/problems/isomorphic-strings/)  
+**Pattern:** Hashing / One-to-one character mapping
+
+## Key idea
+
+Every character in `s` must map **consistently** to one character in `t`, and **two different characters in `s` cannot map to the same character in `t`**.
+
+- `egg` → `add` ✅
+- `foo` → `bar` ❌ (`o` would map to both `a` and `r`)
+- `ab` → `aa` ❌ (two source characters map to `a`)
+
+## Approach 1 — HashMap + HashSet
+
+- `mapping` remembers `s` → `t`.
+- `occurredValue` prevents multiple source characters from using the same target.
+
+**TC:** `O(n)` average · **SC:** `O(k)` for `k` distinct characters (up to `O(n)` for an unrestricted alphabet).
+
+```java
+import java.util.*;
+
+class Solution {
+    public boolean isIsomorphic(String s, String t) {
+        Map<Character, Character> mapping = new HashMap<>();
+        Set<Character> occurredValue = new HashSet<>();
+
+        for (int index = 0; index < s.length(); index++) {
+            char source = s.charAt(index);
+            char target = t.charAt(index);
+
+            if (mapping.containsKey(source)) {
+                if (mapping.get(source) != target) return false;
+            } else {
+                if (occurredValue.contains(target)) return false;
+                mapping.put(source, target);
+                occurredValue.add(target);
+            }
+        }
+        return true;
+    }
+}
+```
+
+## Approach 2 — Two fixed arrays (optimal for ASCII)
+
+- `frequency[source]` stores the target character encoded as `target + 1`.
+- `occurrence[target]` tracks whether the target character is already used.
+- Array indexing replaces HashMap/HashSet lookups. These arrays track **mapping and usage**, not actual frequencies.
+
+**TC:** `O(n)` · **SC:** `O(1)` (two arrays of 128 integers, for ASCII inputs).
+
+```java
+class Solution {
+    public boolean isIsomorphic(String s, String t) {
+        int[] frequency = new int[128];
+        int[] occurrence = new int[128];
+
+        for (int index = 0; index < s.length(); index++) {
+            char source = s.charAt(index);
+            char target = t.charAt(index);
+
+            if (frequency[source] != 0) {
+                if (frequency[source] != target + 1) return false;
+            } else {
+                if (occurrence[target] == 1) return false;
+
+                frequency[source] = target + 1;
+                occurrence[target] = 1;
+            }
+        }
+        return true;
+    }
+}
+```
+
+### Why `+1`?
+
+Java initializes `int[]` elements to **0**, which we use to mean **unmapped**. But ASCII `\0` (the NUL character) also has numeric value `0`.
+
+- **Without `+1`:** mapping `a → '\0'` stores `0`, so `a` incorrectly appears unmapped later.
+- **With `+1`:** stored `0` means unmapped; values `1–128` represent ASCII codes `0–127`.
+- **Important:** both storing and comparing must use `target + 1`.
+
+Example: `s = "aa"`, `t = "\0b"` must return `false`: the same `a` cannot map first to NUL and then to `b`.
+
+### Why keep the second array?
+
+Without `occurrence[]`, `s = "ab"`, `t = "cc"` could wrongly pass: both `a` and `b` would map to `c`. The second array enforces the **one-to-one** rule.
+
+## Complexity summary
+
+| Approach | Time | Auxiliary space |
+|---|---|---|
+| HashMap + HashSet | `O(n)` average | `O(k)` (at most `O(n)` for unrestricted characters) |
+| Two 128-element arrays | `O(n)` | `O(1)` |
+
+**Remember:** Validate both **consistent mapping** and **unique targets**. Two fixed-size arrays are already asymptotically optimal for ASCII; removing one would not improve `O(1)` space. The 128-element version assumes ASCII input (not arbitrary Java Unicode characters).
+
+# 14. Longest Common Prefix
+
+**Problem:** https://leetcode.com/problems/longest-common-prefix/  
+**Pattern:** String scanning / Prefix matching
+
+## Key idea
+Find the longest starting sequence shared by **every** string.
+
+- `["flower", "flow", "flight"]` → `"fl"`
+- `["dog", "racecar", "car"]` → `""`
+
+## Approach 1 — Horizontal scanning (my approach)
+
+Start with the first string as the current prefix. Compare it with each subsequent string, shrinking the prefix to their matching starting characters. Stop early if the prefix becomes empty.
+
+```java
+class Solution {
+    public String longestCommonPrefix(String[] strs) {
+        String result = strs[0];
+
+        for (int index = 1; index < strs.length; index++) {
+            String value = strs[index];
+            int limit = Math.min(result.length(), value.length());
+            int count = 0;
+
+            while (count < limit && result.charAt(count) == value.charAt(count)) {
+                count++;
+            }
+
+            result = result.substring(0, count);
+            if (result.isEmpty()) return "";
+        }
+        return result;
+    }
+}
+```
+
+**Time:** O(S), where S is the total number of characters examined (upper bound O(N × L), with N strings and L the length of the shortest string, plus any first-string initialization).  
+**Auxiliary space:** O(L) in the worst case for the newly created intermediate prefix strings; excludes the returned result.
+
+### Why `Math.min()` is NOT redundant
+
+```java
+result = "flower";
+value  = "flow";
+```
+
+After matching 4 characters, calling `value.charAt(4)` would throw `StringIndexOutOfBoundsException`. The condition `count < limit` prevents accessing past **either** string's end. Java evaluates `&&` left-to-right, so the bound is checked before `charAt()`.
+
+The `limit` **variable** is optional, but **length checking is essential**. Equivalent condition:
+
+```java
+while (count < result.length() && count < value.length()
+        && result.charAt(count) == value.charAt(count)) {
+    count++;
+}
+```
+
+`result.substring(0, count)` and `value.substring(0, count)` are equivalent because the first `count` characters match. Using `result` better communicates that we are shrinking the current prefix.
+
+## Approach 2 — Vertical scanning
+
+Compare character position `i` across **all** strings. Return the prefix immediately when a string ends or a character differs.
+
+```java
+class Solution {
+    public String longestCommonPrefix(String[] strs) {
+        String first = strs[0];
+
+        for (int i = 0; i < first.length(); i++) {
+            char current = first.charAt(i);
+
+            for (int j = 1; j < strs.length; j++) {
+                if (i >= strs[j].length() || strs[j].charAt(i) != current) {
+                    return first.substring(0, i);
+                }
+            }
+        }
+        return first;
+    }
+}
+```
+
+**Time:** O(S), worst case O(N × L), for N strings and shortest-string length L.  
+**Auxiliary space:** O(1), excluding the returned substring.
+
+## Comparison
+
+| Method | Time | Auxiliary space | Main idea |
+|---|---|---|---|
+| Horizontal | O(S) | O(L) | Shrink the common prefix after each string |
+| Vertical | O(S) | O(1) | Check one character index across all strings |
+
+**Revision rule:** Horizontal = compare **string by string**; vertical = compare **position by position**. Check string boundaries **before** calling `charAt()`.
+
+> LeetCode guarantees at least one string. If the input could be an empty array outside LeetCode, add an explicit empty-array guard.
