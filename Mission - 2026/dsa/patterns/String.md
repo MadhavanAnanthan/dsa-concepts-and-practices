@@ -405,3 +405,118 @@ class Solution {
 **Revision rule:** Horizontal = compare **string by string**; vertical = compare **position by position**. Check string boundaries **before** calling `charAt()`.
 
 > LeetCode guarantees at least one string. If the input could be an empty array outside LeetCode, add an explicit empty-array guard.
+
+# 5. Longest Palindromic Substring
+
+**Pattern:** String · Two Pointers · Expand Around Center  
+**Problem:** [LeetCode 5](https://leetcode.com/problems/longest-palindromic-substring/)
+
+Given a string `s`, return its longest contiguous palindromic substring.
+
+**Example:** `s = "babad"` → `"bab"` or `"aba"` (both valid).
+
+## Approach 1 — Brute Force
+
+**Idea:** Try each possible substring using two loops. For every candidate, compare its leftmost and rightmost characters, moving inward until they mismatch or meet. Keep the longest palindrome.
+
+> The code below reconstructs the brute-force approach from my description; it is not my exact original submission.
+
+```java
+class Solution {
+    public String longestPalindrome(String s) {
+        int from = 0, to = 0;
+
+        for (int i = 0; i < s.length(); i++) {
+            for (int j = s.length() - 1; j > i; j--) {
+                // Skip substrings that cannot improve the current answer.
+                if (j - i <= to - from) break;
+
+                int left = i, right = j;
+                while (left < right && s.charAt(left) == s.charAt(right)) {
+                    left++;
+                    right--;
+                }
+
+                if (left >= right) { // Valid palindrome
+                    from = i;
+                    to = j;
+                    break; // Longest palindrome starting at i found
+                }
+            }
+        }
+        return s.substring(from, to + 1);
+    }
+}
+```
+
+- **Time:** O(n³) worst case — O(n²) candidate substrings, each requiring up to O(n) comparisons.
+- **Auxiliary space:** O(1) — only indexes/pointers; excludes the returned substring.
+
+## Approach 2 — Expand Around Center (Recommended)
+
+**Key insight:** Every palindrome is symmetric around a center. Instead of trying all substrings, start at each center and expand **outward** while the characters match.
+
+Two types of centers must be checked at **every index**:
+
+- **Odd length:** `(i, i)` — e.g., `"aba"`.
+- **Even length:** `(i, i + 1)` — e.g., `"abba"`.
+
+```java
+class Solution {
+    public String longestPalindrome(String s) {
+        int from = 0;
+        int to = 0;
+
+        for (int i = 0; i < s.length(); i++) {
+            int[] odd = expand(s, i, i);       // One-character center
+            int[] even = expand(s, i, i + 1);  // Center between characters
+
+            if (odd[1] - odd[0] > to - from) {
+                from = odd[0];
+                to = odd[1];
+            }
+
+            if (even[1] - even[0] > to - from) {
+                from = even[0];
+                to = even[1];
+            }
+        }
+
+        return s.substring(from, to + 1); // End index is exclusive
+    }
+
+    public int[] expand(String s, int left, int right) {
+        while (left >= 0 && right < s.length()
+                && s.charAt(left) == s.charAt(right)) {
+            left--;
+            right++;
+        }
+        // Undo the last expansion: pointers are now beyond the palindrome.
+        return new int[]{left + 1, right - 1};
+    }
+}
+```
+
+- **Time:** O(n²) — O(n) centers, each expanding up to O(n) characters.
+- **Auxiliary space:** O(1) — fixed number of indexes and 2-element arrays at a time (though those arrays cause O(n) total allocations).
+- **Result allocation:** O(k) for the returned substring of length `k` in modern Java.
+
+### Important details
+
+1. The **whole string's length** does not determine the answer's parity: `"xabba"` has odd length, but `"abba"` is its longest palindrome.
+2. `expand()` returns inclusive bounds `[left + 1, right - 1]`; the final failed comparison has already pushed the pointers outside the palindrome.
+3. Comparing `end - start` is valid here because all saved ranges use **inclusive** endpoints. Their actual lengths are `end - start + 1`.
+4. `substring(from, to + 1)` includes the character at index `to`.
+5. LeetCode guarantees a nonempty string. For general-purpose code, handle `s.isEmpty()` before returning `substring(0, 1)`.
+
+## Complexity summary
+
+| Approach | Time | Auxiliary space |
+|---|---|---|
+| Brute force | O(n³) | O(1) |
+| Expand around center | **O(n²)** | **O(1)** |
+
+## One-line takeaway
+
+**Palindrome + symmetry → expand two pointers from each possible center; check both `(i, i)` and `(i, i + 1)` and record the longest valid bounds.**
+
