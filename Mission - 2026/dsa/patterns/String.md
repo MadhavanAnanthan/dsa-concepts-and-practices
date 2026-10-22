@@ -520,3 +520,73 @@ class Solution {
 
 **Palindrome + symmetry → expand two pointers from each possible center; check both `(i, i)` and `(i, i + 1)` and record the longest valid bounds.**
 
+# 38. Count and Say
+
+**Pattern:** String Traversal / Run-Length Encoding
+
+## Approach (Iterative)
+- Start with `result = "1"`.
+- Repeat from term `2` to `n`.
+- Scan the previous term, counting **consecutive** occurrences of each character.
+- When the character changes, append `count` followed by the previous character.
+- Append the final group after the inner loop, then use the built string as the next term.
+
+## Optimized Java Code
+
+```java
+class Solution {
+    public String countAndSay(int n) {
+        String result = "1";
+
+        for (int term = 2; term <= n; term++) {
+            StringBuilder next = new StringBuilder();
+            char previous = result.charAt(0);
+            int count = 1;
+
+            for (int i = 1; i < result.length(); i++) {
+                char current = result.charAt(i);
+
+                if (current == previous) {
+                    count++;
+                } else {
+                    next.append(count).append(previous);
+                    previous = current;
+                    count = 1;
+                }
+            }
+
+            next.append(count).append(previous); // Final group
+            result = next.toString();
+        }
+
+        return result;
+    }
+}
+```
+
+## Evolution of My Solution
+
+1. **Initial counting logic:** Reset `count = 0` on a character change and used a boolean to handle the last group. Fixed this by starting with `count = 1`, resetting to `1` for a new group, and always appending the final group after the loop.
+2. **String concatenation:** Repeatedly reassigned strings using `concat()`, copying previously built content and causing up to **O(n × m²)** time.
+3. **StringBuilder:** Switched to `append()` to build each term efficiently, reducing the time bound to **O(n × m)**.
+4. **Simplified traversal:** Started the inner loop at index `1`, compared `char` values directly, and updated `previous` only when the character changed.
+
+## Complexity
+
+Let `n` be the requested term and `m` the maximum generated string length among terms `1` through `n`.
+
+| Version | Time Complexity | Space Complexity |
+|---|---|---|
+| Repeated `String.concat()` | O(n × m²) upper bound | O(m) peak live space* |
+| `StringBuilder` (optimized) | **O(n × m)** | **O(m)** |
+
+- Outer loop runs `n - 1` times; each inner loop scans a previous term of length at most `m`.
+- `StringBuilder` appends are amortized efficient, and `toString()` copies the output at most once per term.
+- Only the current and next generated strings are retained, so the iterative solution uses **O(m)** space.
+
+*For the concatenation version, O(m) refers to peak live memory; repeated concatenation can create many temporary strings and extra allocation/GC work.
+
+## Takeaway
+
+**Count and Say:** Use an outer loop to generate terms up to `n`. For each term, scan the previous result, count consecutive occurrences of the same character, and append `count + character` to build the next term. Initially, repeated string reassignment using `concat()` increased the time bound to **O(n × m²)**. Replacing it with `StringBuilder` improved the time bound to **O(n × m)** while keeping auxiliary space at **O(m)**. Solved using the iterative approach.
+
