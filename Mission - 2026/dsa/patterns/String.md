@@ -1357,3 +1357,378 @@ class Solution {
 7. **Space optimization:** Prefer `charAt()` over `toCharArray()` when an additional array isn't required.
 
 **Pattern to Remember:** `Fix Start → Expand End → Maintain State → Calculate Result`
+
+# LeetCode 541 — Reverse String II
+
+**Pattern:** Two Pointers · Fixed-size Block Traversal · In-place Reversal
+
+## Problem
+
+For every consecutive `2*k` characters, reverse the first `k` characters.
+- If fewer than `k` remain, reverse all remaining characters.
+- If between `k` and `2*k` remain, reverse only the first `k`.
+
+## Approach Evolution
+
+**Initial insight → Optimal approach (no separate brute-force implementation needed)**
+
+- Convert the immutable `String` into a mutable `char[]`.
+- Jump by `2*k` (`start += 2*k`) rather than inspecting every block separately.
+- Reverse the range `[start, min(start + k, n) - 1]` using two pointers.
+- Convert the array back into a `String`.
+
+**Small refinement:** Use `left < right`, not `left <= right`, to avoid a redundant self-swap in odd-length ranges.
+
+## Java — Optimal Solution
+
+```java
+class Solution {
+    public String reverseStr(String s, int k) {
+        char[] input = s.toCharArray();
+
+        for (int start = 0; start < input.length; start += 2 * k) {
+            int left = start;
+            int right = Math.min(start + k, input.length) - 1;
+
+            while (left < right) {
+                char temp = input[left];
+                input[left] = input[right];
+                input[right] = temp;
+                left++;
+                right--;
+            }
+        }
+        return new String(input);
+    }
+}
+```
+
+## Complexity
+
+- **TC: `O(n)`** — Across all blocks, at most `n` characters are visited/swapped; array conversion and string creation are also linear.
+- **SC: `O(n)`** — The mutable `char[]` needs `O(n)` space (and the returned string occupies `O(n)` space).
+- **Reversal helper space: `O(1)`** — Only indices and a temporary character are used for swapping.
+
+## Key Takeaways
+
+- When the problem describes a repeated `2*k` pattern, **jump by `2*k`**.
+- `Math.min(start + k, n)` naturally handles a short final block.
+- Two pointers reverse a mutable array segment in place.
+- `String` is immutable in Java; converting it to `char[]` costs `O(n)` space.
+- **An optimal first approach is fine.** Do not manufacture brute/better solutions just to fill categories.
+
+# LeetCode 394 — Decode String
+
+**Difficulty:** Medium  
+**Pattern:** Stack · Nested expressions · String building
+
+## Pattern recognition
+
+- `k[encoded_string]` means repeat the decoded content inside brackets `k` times.
+- Closing `]` completes the most recent nested group → **LIFO / stack**.
+- Save the outer context before entering `[`; restore it at `]`.
+- Parse multidigit counts: `12[a]`, not just single digits.
+
+## Approach evolution
+
+### 1. My initial approach — one character stack
+
+Push characters until `]`. On `]`, pop the current group, reverse the extracted characters and count, repeat, then push decoded characters back. Finally, read the stack from oldest to newest.
+
+```java
+class Solution {
+    public StringBuilder repeatedString(StringBuilder subResult, int count) {
+        String source = subResult.toString();
+        subResult.setLength(0);
+        while (count > 0) {
+            subResult.append(source);
+            count--;
+        }
+        return subResult;
+    }
+
+    public StringBuilder decodedSubstring(Deque<Character> stack) {
+        StringBuilder subResult = new StringBuilder();
+        StringBuilder count = new StringBuilder();
+        boolean cycleDone = false;
+
+        while (!stack.isEmpty()) {
+            char lastAddedChar = stack.peek();
+            if (Character.isDigit(lastAddedChar)) {
+                count.append(lastAddedChar);
+            } else if (cycleDone && !Character.isDigit(lastAddedChar)) {
+                break;
+            } else if (lastAddedChar == '[') {
+                cycleDone = true;
+                stack.pop();
+                continue;
+            } else {
+                subResult.append(lastAddedChar);
+            }
+            stack.pop();
+        }
+        subResult.reverse();
+        count.reverse();
+        repeatedString(subResult, Integer.parseInt(count.toString()));
+        return subResult;
+    }
+
+    public String decodeString(String s) {
+        Deque<Character> stack = new ArrayDeque<>();
+        for (int index = 0; index < s.length(); index++) {
+            if (s.charAt(index) == ']') {
+                StringBuilder decodedValue = decodedSubstring(stack);
+                for (int i = 0; i < decodedValue.length(); i++) {
+                    stack.push(decodedValue.charAt(i));
+                }
+            } else {
+                stack.push(s.charAt(index));
+            }
+        }
+        StringBuilder result = new StringBuilder();
+        while (!stack.isEmpty()) {
+            result.append(stack.pollLast());
+        }
+        return result.toString();
+    }
+}
+```
+
+**Complexity:** Time **O(n + d × L)** worst case; space **O(n + L)**. Processing and re-copying output fragments at successive nested levels may cost up to `d × L`. The character stack and temporary expanded strings take up to O(n + L) memory.
+
+**Tradeoffs:** Correct on valid input, but requires reversing extracted text/count, popping and re-pushing decoded characters, and extra `cycleDone` state.
+
+### 2. Improved approach — two stacks (counts and previous text)
+
+Save the repetition count and text constructed so far when `[` begins. When `]` arrives, restore the previous text and append the current decoded group the requested number of times.
+
+```java
+import java.util.ArrayDeque;
+import java.util.Deque;
+
+class Solution {
+    public String decodeString(String s) {
+        Deque<Integer> counts = new ArrayDeque<>();
+        Deque<StringBuilder> prefixes = new ArrayDeque<>();
+
+        StringBuilder current = new StringBuilder();
+        int count = 0;
+
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (Character.isDigit(c)) {
+                count = count * 10 + (c - '0');
+            } else if (c == '[') {
+                counts.push(count);
+                prefixes.push(current);
+                current = new StringBuilder();
+                count = 0;
+            } else if (c == ']') {
+                int repetitions = counts.pop();
+                StringBuilder previous = prefixes.pop();
+                for (int j = 0; j < repetitions; j++) {
+                    previous.append(current);
+                }
+                current = previous;
+            } else {
+                current.append(c);
+            }
+        }
+        return current.toString();
+    }
+}
+```
+
+**Complexity:** Time **O(n + d × L)** worst case; space **O(n + L)** including builders and output. The stack itself stores at most O(d) frames, though saved prefixes contain characters. Materializing a string at each level can repeatedly copy it.
+
+**Why this is better:** No reversals, no `cycleDone`, no pushing decoded content character by character, and nesting is modeled explicitly. It is cleaner rather than a strict Big-O improvement.
+
+## Key takeaway
+
+> A `]` closes the most recent `[` → stack. Preserve **(repetition count, outer string)** at `[`, build the inner string, and combine them on `]`.
+
+### Complexity reminder
+
+`L` is the **decoded** length, which can be far larger than `n`. Saying only O(n) time is incorrect because producing the answer already takes at least **Ω(L)** time. For these eager string-building implementations, deep nesting can add extra copying.
+
+## Examples
+
+| Input | Output |
+|---|---|
+| `3[a]2[bc]` | `aaabcbc` |
+| `3[a2[c]]` | `accaccacc` |
+| `2[abc]3[cd]ef` | `abcabccdcdcdef` |
+| `10[a]` | `aaaaaaaaaa` |
+
+
+# LeetCode 767 — Reorganize String
+
+**Difficulty:** Medium  
+**Patterns:** Greedy · Frequency Counting · Max Heap (Priority Queue) · Even/Odd Index Placement
+
+## Problem
+Rearrange the characters of `s` so that no two adjacent characters are equal. Return `""` if no valid rearrangement exists. Any valid rearrangement is acceptable.
+
+## Pattern recognition
+- **Frequency counting:** Which characters occur most often?
+- **Greedy + max heap:** Choose the highest-frequency *available* character at every step.
+- **Hold previous character out of the heap:** Prevent the same character from being selected in consecutive positions.
+- **Alternative greedy placement:** Place the most frequent characters at indices `0, 2, 4, ...`, then `1, 3, 5, ...`.
+
+## Feasibility check
+If the maximum frequency is greater than `(n + 1) / 2`, a valid rearrangement is impossible.
+
+Example: `aaab` → max frequency 3, available separated positions only 2 → return `""`.
+
+## Approach 1 — My original solution: Max heap + previous character
+
+```java
+class Solution {
+    public String reorganizeString(String s) {
+        // iterate all and take frequencies in array
+        int[] freq = new int[26];
+        char[] input = s.toCharArray();
+        for(char c : input){
+            freq[c-'a'] = freq[c-'a'] + 1;
+        }
+        // declare priority queue with each int[]
+        PriorityQueue<int[]> pq = new PriorityQueue<>((a,b)-> b[1]-a[1]);
+        for(int index = 0; index < freq.length; index++){
+            if(freq[index] > 0){
+                char currentCharacter = (char) ('a' + index);
+                pq.offer(new int[] {currentCharacter, freq[index]});
+            }
+        }
+        
+        // iterate pq and add value to stringbuilder and remove top after peek
+        StringBuilder result = new StringBuilder();
+        int[] highestFreq = new int[2];
+        int[] backup = new int[2];
+        boolean notFirstTime = false;
+        while(!pq.isEmpty()){
+            highestFreq = pq.poll();
+            char character = (char) highestFreq[0];
+            result.append(character);
+            highestFreq[1]--;
+            if(notFirstTime && backup[1]>0){
+                pq.offer(backup);
+            }
+           backup = highestFreq;
+           notFirstTime=true;
+        }
+        
+        String output = result.toString();
+        if(output.length() == input.length){
+            return output;
+        }else{
+            return "";
+        }
+    }
+}
+```
+
+### Why it works
+The previously appended character remains in `backup` for one iteration, so it cannot be selected again immediately. If the heap becomes empty while a held character still has a remaining count, no valid completion exists; your length check returns `""`.
+
+**Time complexity:** `O(n + 26 log 26)` = **O(n)** for lowercase English letters. More generally, `O(n log u)` for `u` distinct characters.  
+**Space complexity:** **O(n)** including `toCharArray()`, heap storage, and output builder; **O(26)** auxiliary working space if output/input copies are excluded.
+
+## Approach 2 — Cleaner max-heap implementation
+
+Same algorithm and asymptotic complexity, with a direct impossibility check and no boolean flag.
+
+```java
+class Solution {
+    public String reorganizeString(String s) {
+        int[] freq = new int[26];
+        int maxFreq = 0;
+        for (char c : s.toCharArray()) {
+            maxFreq = Math.max(maxFreq, ++freq[c - 'a']);
+        }
+        if (maxFreq > (s.length() + 1) / 2) return "";
+
+        PriorityQueue<int[]> pq = new PriorityQueue<>(
+            (a, b) -> Integer.compare(b[1], a[1])
+        );
+        for (int i = 0; i < 26; i++) {
+            if (freq[i] > 0) pq.offer(new int[]{i, freq[i]});
+        }
+
+        StringBuilder result = new StringBuilder();
+        int[] previous = null;
+        while (!pq.isEmpty()) {
+            int[] current = pq.poll();
+            result.append((char) ('a' + current[0]));
+            current[1]--;
+
+            if (previous != null && previous[1] > 0) pq.offer(previous);
+            previous = current;
+        }
+        return result.toString();
+    }
+}
+```
+
+**TC:** `O(n)` with fixed 26-character alphabet. **SC:** `O(n)` including output; `O(26)` excluding output.
+
+## Approach 3 — Optimized greedy: Even/odd index placement
+
+For lowercase English letters, avoid the heap entirely:
+
+```java
+class Solution {
+    public String reorganizeString(String s) {
+        int n = s.length();
+        int[] freq = new int[26];
+        int maxIndex = 0;
+
+        for (int i = 0; i < n; i++) {
+            int index = s.charAt(i) - 'a';
+            freq[index]++;
+            if (freq[index] > freq[maxIndex]) maxIndex = index;
+        }
+        if (freq[maxIndex] > (n + 1) / 2) return "";
+
+        char[] result = new char[n];
+        int position = 0;
+
+        while (freq[maxIndex] > 0) {
+            result[position] = (char) ('a' + maxIndex);
+            position += 2;
+            freq[maxIndex]--;
+        }
+
+        for (int i = 0; i < 26; i++) {
+            while (freq[i] > 0) {
+                if (position >= n) position = 1;
+                result[position] = (char) ('a' + i);
+                position += 2;
+                freq[i]--;
+            }
+        }
+        return new String(result);
+    }
+}
+```
+
+**Why it works:** Filling alternating positions creates gaps between copies of the most frequent character. Once the even indices are filled, continue at odd indices; the maximum-frequency feasibility check guarantees enough separation.
+
+**TC:** **O(n + 26) = O(n)**.  
+**SC:** **O(n)** for the output array; **O(26) = O(1)** auxiliary space excluding output.
+
+## Approach evolution
+
+| Version | Idea | TC | SC (including output) |
+|---|---|---|---|
+| Original | Max heap; hold previous item outside heap | O(n) | O(n) |
+| Cleaner | Same heap algorithm; simpler state, early feasibility check | O(n) | O(n) |
+| Optimized | Frequency array + fill even indices, then odd | O(n) | O(n) |
+
+> **Important:** For a 26-letter alphabet, your heap solution is **already asymptotically optimal in time**: every input character must be read, so Ω(n) is unavoidable. Even/odd placement improves constants and removes heap operations; it does not improve the Big-O time bound.
+
+## Key takeaways
+1. When adjacent duplicates are forbidden, ask: **Which character is most frequent?**
+2. **Max-heap + cooldown/previous item** is a reusable greedy pattern (also useful in task scheduling variants).
+3. A max frequency greater than `ceil(n/2)` makes this problem impossible.
+4. With a **fixed small alphabet**, a frequency array plus index placement can replace the heap.
+5. **Complexity nuance:** `StringBuilder`, `char[]` for the result, and the returned string all count as output-related `O(n)` storage. The frequency array and heap hold at most 26 entries.
