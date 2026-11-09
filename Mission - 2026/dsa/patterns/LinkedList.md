@@ -232,3 +232,548 @@ Use this pattern when:
 ## Takeaway
 
 Initially, I understood that normal linked list traversal stops when `head` becomes `null`, but a cyclic linked list never reaches `null`, causing an infinite loop. I first used a `HashSet` to track visited node references, achieving O(n) time and O(n) space. Then I learned Floyd's Cycle Detection using slow and fast pointers, where slow moves one step and fast moves two steps. If a cycle exists, they eventually meet; otherwise, fast reaches `null`. My initial implementation used a boolean to avoid comparing pointers at their starting position. Later, I optimized it by moving both pointers before comparing them, eliminating the boolean and achieving **O(n) time and O(1) space** without knowing the linked list's size.
+
+# 876. Middle of the Linked List
+
+**Difficulty:** Easy  
+**Pattern:** Linked List | Fast & Slow Pointers  
+**LeetCode:** https://leetcode.com/problems/middle-of-the-linked-list/
+
+## Problem
+
+Given the head of a singly linked list, return the middle node.
+
+If the list contains an even number of nodes, return the **second middle node**.
+
+**Examples:**
+
+```text
+Input:  1 → 2 → 3 → 4 → 5
+Output: 3
+
+Input:  1 → 2 → 3 → 4 → 5 → 6
+Output: 4
+```
+
+---
+
+## Approach 1: Two-Pass Traversal (My Initial Solution)
+
+### Intuition
+
+1. Traverse the linked list and count all nodes.
+2. Calculate the middle index using `count / 2`.
+3. Traverse again until reaching that index.
+4. Return the middle node.
+
+### Code
+
+```java
+class Solution {
+    public ListNode middleNode(ListNode head) {
+        int middle = 0;
+        ListNode traverseAll = head;
+
+        while (traverseAll != null) {
+            traverseAll = traverseAll.next;
+            middle++;
+        }
+
+        middle = middle / 2;
+        int remainingNodes = 0;
+
+        while (head != null) {
+            if (middle == remainingNodes) {
+                return head;
+            }
+            head = head.next;
+            remainingNodes++;
+        }
+
+        return head;
+    }
+}
+```
+
+### Complexity
+
+- **Time:** O(n) — First traversal O(n) + second traversal O(n/2).
+- **Space:** O(1) — Only references and counters.
+
+**Important:** Two sequential loops do not mean O(n²).
+
+```text
+O(n) + O(n/2) = O(n)
+```
+
+**Limitation:** Requires two traversals.
+
+---
+
+## Approach 2: Fast & Slow Pointers (Optimized)
+
+### Intuition
+
+Instead of counting nodes, use two pointers moving at different speeds.
+
+- `slow` moves one node at a time.
+- `fast` moves two nodes at a time.
+- When `fast` reaches the end, `slow` points to the middle.
+- Works for both odd and even-length linked lists.
+
+### Code
+
+```java
+class Solution {
+    public ListNode middleNode(ListNode head) {
+        ListNode slow = head;
+        ListNode fast = head;
+
+        while (fast != null && fast.next != null) {
+            slow = slow.next;
+            fast = fast.next.next;
+        }
+
+        return slow;
+    }
+}
+```
+
+### Dry Run 1: Even-Length Linked List
+
+**Input:** `[1,2,3,4,5,6]`
+
+| Iteration | Slow | Fast |
+|---|---|---|
+| Initial | 1 | 1 |
+| 1 | 2 | 3 |
+| 2 | 3 | 5 |
+| 3 | 4 | null |
+
+**Result:**
+
+- `fast == null` → `fast != null` becomes false.
+- Loop terminates.
+- `slow` points to node `4`.
+
+**Output: 4** (second middle node).
+
+### Dry Run 2: Odd-Length Linked List
+
+**Input:** `[1,2,3,4,5]`
+
+| Iteration | Slow | Fast |
+|---|---|---|
+| Initial | 1 | 1 |
+| 1 | 2 | 3 |
+| 2 | 3 | 5 |
+
+**Result:**
+
+- `fast` still points to the last node (`5`).
+- `fast.next == null` → `fast.next != null` becomes false.
+- Loop terminates.
+- `slow` points to node `3`.
+
+**Output: 3** (exact middle node).
+
+### Why Both While Conditions Are Important
+
+```java
+while (fast != null && fast.next != null)
+```
+
+**1. `fast != null`**
+
+- For an even-length linked list, `fast` eventually becomes `null`.
+- This condition terminates the loop.
+- Also prevents accessing `fast.next` when `fast` is null.
+
+**2. `fast.next != null`**
+
+- For an odd-length linked list, `fast` eventually points to the last node.
+- The last node's `next` is `null`, so this condition terminates the loop.
+- Prevents accessing `fast.next.next` when `fast.next` is null.
+
+**Important:** Java's `&&` uses short-circuit evaluation. If `fast != null` is false, Java does not evaluate `fast.next != null`, preventing a `NullPointerException`.
+
+### Complexity
+
+- **Time:** O(n) — Single traversal; fast advances two nodes per iteration.
+- **Space:** O(1) — Only two pointer references.
+
+---
+
+## How to Recognize the Fast & Slow Pointer Pattern
+
+**Problem signals:**
+
+- Find the middle of a linked list.
+- Find a relative position without calculating the length.
+- Detect a cycle in a linked list.
+- Traverse using two pointers at different speeds.
+
+**Thought process:**
+
+```text
+Need middle node
+       ↓
+Linked list has no direct index access
+       ↓
+Initial approach: Count nodes + traverse again
+       ↓
+Can we avoid the second traversal?
+       ↓
+Use two pointers moving at different speeds
+       ↓
+Fast moves 2 steps, slow moves 1 step
+       ↓
+Fast reaches end → Slow reaches middle
+       ↓
+Pattern: Fast & Slow Pointers
+```
+
+**Core relationship:**
+
+```text
+Fast travels approximately twice
+the distance traveled by Slow.
+
+Fast reaches the end
+        ↓
+Slow reaches the middle
+```
+
+**Note:** This middle-finding technique assumes the linked list has no cycle.
+
+---
+
+## Approach Comparison
+
+| Metric | Two-Pass Traversal | Fast & Slow Pointers |
+|---|---|---|
+| Time | O(n) | O(n) |
+| Space | O(1) | O(1) |
+| Traversals | Two | One |
+| Extra Data Structure | No | No |
+| Interview Preference | Good | Optimal |
+
+---
+
+## Pattern Reusability
+
+**LC 141 — Linked List Cycle**
+
+- Slow moves one step, fast moves two steps.
+- If they meet during traversal, a cycle exists.
+
+**LC 876 — Middle of Linked List**
+
+- Slow moves one step, fast moves two steps.
+- When fast reaches the end, slow identifies the middle.
+
+The pointer movement is similar, but the termination logic and purpose differ.
+
+---
+
+## Key Takeaway
+
+My initial two-pass solution was already **O(n) time and O(1) space**, because sequential loops have additive complexity, not O(n²). The optimized **Fast & Slow Pointer** approach eliminates the second traversal: slow moves one step while fast moves two steps, so when fast reaches the end, slow points to the middle. For **even-length lists**, fast becomes `null`, terminating through `fast != null`, and slow returns the second middle. For **odd-length lists**, fast remains at the last node, and `fast.next != null` terminates the loop. Both conditions are essential for safe traversal and preventing `NullPointerException`. The main pattern-recognition lesson is to consider two pointers moving at different speeds whenever a linked list problem requires finding a relative position without knowing its length.
+
+# 234. Palindrome Linked List
+
+**Difficulty:** Easy  
+**Pattern:** Fast & Slow Pointers | Stack | Linked List Reversal  
+**LeetCode:** https://leetcode.com/problems/palindrome-linked-list/
+
+## Problem
+
+Given the head of a singly linked list, determine whether the list is a palindrome.
+
+A palindrome reads the same forward and backward.
+
+```text
+Input:  1 → 2 → 2 → 1
+Output: true
+
+Input:  1 → 2 → 3 → 2 → 1
+Output: true
+
+Input:  1 → 2 → 3
+Output: false
+```
+
+---
+
+## Approach 1: Fast & Slow Pointers + Stack (Initial Solution)
+
+### Intuition
+
+1. Use slow and fast pointers to locate the middle.
+2. Push first-half values into a stack.
+3. For odd-length lists, skip the middle node.
+4. Compare the remaining nodes with stack values using LIFO.
+5. Return `false` on a mismatch; otherwise return `true`.
+
+### Code — My Initial Approach
+
+```java
+class Solution {
+    public boolean isPalindrome(ListNode head) {
+        ListNode slow = head;
+        ListNode fast = head;
+
+        Deque<Integer> stack = new ArrayDeque<>();
+
+        while (fast != null && fast.next != null) {
+            stack.push(slow.val);
+            slow = slow.next;
+            fast = fast.next.next;
+
+            // Skip middle for odd-length lists
+            if (fast != null && fast.next == null) {
+                slow = slow.next;
+            }
+        }
+
+        while (slow != null && !stack.isEmpty()) {
+            int topValue = stack.pop();
+
+            if (slow.val != topValue) {
+                return false;
+            }
+
+            slow = slow.next;
+        }
+
+        return true;
+    }
+}
+```
+
+### Complexity
+
+- **Time:** O(n) — Traverse to the middle and compare the remaining half.
+- **Space:** O(n) — Stack stores approximately n/2 values.
+
+### Limitation
+
+Uses additional memory to store the first half of the linked list.
+
+---
+
+## Approach 2: Fast & Slow Pointers + In-Place Reversal (Optimized)
+
+### Intuition
+
+Instead of storing values in a stack:
+
+1. Find the middle using slow and fast pointers.
+2. Skip the middle node if the list length is odd.
+3. Reverse the second half in place.
+4. Compare the first half against the reversed second half.
+5. Return `false` for a mismatch; otherwise `true`.
+
+### Code — My Optimized Solution
+
+```java
+class Solution {
+
+    public ListNode reverseList(ListNode head) {
+        ListNode previous = null;
+
+        while (head != null) {
+            ListNode next = head.next;
+            head.next = previous;
+            previous = head;
+            head = next;
+        }
+
+        return previous;
+    }
+
+    public boolean isPalindrome(ListNode head) {
+        ListNode slow = head;
+        ListNode fast = head;
+
+        // Step 1: Find middle
+        while (fast != null && fast.next != null) {
+            slow = slow.next;
+            fast = fast.next.next;
+        }
+
+        // Step 2: Skip middle for odd-length lists
+        if (fast != null) {
+            slow = slow.next;
+        }
+
+        // Step 3: Reverse second half
+        ListNode reversedRef = reverseList(slow);
+        ListNode source = head;
+
+        // Step 4: Compare
+        while (reversedRef != null) {
+            if (source.val != reversedRef.val) {
+                return false;
+            }
+
+            source = source.next;
+            reversedRef = reversedRef.next;
+        }
+
+        return true;
+    }
+}
+```
+
+### Complexity
+
+- **Time:** O(n) — Finding middle, reversing and comparing are sequential O(n) operations.
+- **Space:** O(1) — Only a constant number of node references.
+
+**Important:** This approach modifies the original linked list. If the original structure must be preserved, reverse the second half again after comparison to restore it.
+
+---
+
+## Understanding Reverse Linked List — LC 206 Revision
+
+### Original
+
+```text
+1 → 2 → 3 → null
+```
+
+### Goal
+
+```text
+null ← 1 ← 2 ← 3
+```
+
+### Four Important Statements
+
+```java
+ListNode next = head.next;
+ListNode previous = null;
+
+head.next = previous;
+previous = head;
+head = next;
+```
+
+The actual repeated sequence is:
+
+```java
+ListNode previous = null;
+
+while (head != null) {
+    ListNode next = head.next; // 1. Preserve next reference
+    head.next = previous;      // 2. Reverse link
+    previous = head;           // 3. Advance previous
+    head = next;               // 4. Advance head
+}
+```
+
+### Dry Run
+
+Original: `1 → 2 → 3 → null`
+
+| Iteration | Current head | Saved next | Previous after reversal |
+|---|---|---|---|
+| Initial | 1 | — | null |
+| 1 | 1 | 2 | 1 → null |
+| 2 | 2 | 3 | 2 → 1 → null |
+| 3 | 3 | null | 3 → 2 → 1 → null |
+
+At termination:
+
+```text
+head = null
+previous = 3 → 2 → 1 → null
+```
+
+Return `previous`, because it points to the new head.
+
+**Key:** Save the next reference before changing `head.next`, or the remaining linked list could become unreachable.
+
+---
+
+## Odd vs Even-Length Handling
+
+### Odd: [1,2,3,2,1]
+
+```text
+1 → 2 → 3 → 2 → 1
+        ↑
+       slow
+```
+
+- `fast` stops at the last node.
+- `fast != null` is true.
+- Skip the middle node (`3`).
+- Reverse `2 → 1` into `1 → 2`.
+- Compare with the first two nodes.
+
+### Even: [1,2,2,1]
+
+```text
+1 → 2 → 2 → 1
+        ↑
+       slow
+```
+
+- `fast` becomes null.
+- `fast != null` is false.
+- Do not skip any node.
+- Reverse `2 → 1` into `1 → 2`.
+- Compare with the first two nodes.
+
+---
+
+## Pattern Recognition
+
+**Question:** How can I recognize this approach in another problem?
+
+```text
+Need to check palindrome
+         ↓
+Singly linked list cannot traverse backward
+         ↓
+Initial idea: Stack to simulate reverse order
+         ↓
+Can we eliminate extra memory?
+         ↓
+Find middle using slow/fast pointers
+         ↓
+Reverse second half in place
+         ↓
+Compare both halves
+         ↓
+O(n) Time + O(1) Auxiliary Space
+```
+
+### Reusable Techniques
+
+| Problem | Technique |
+|---|---|
+| LC 141 — Linked List Cycle | Fast & Slow Pointers |
+| LC 876 — Middle of Linked List | Fast & Slow Pointers |
+| LC 206 — Reverse Linked List | In-place Pointer Reversal |
+| LC 234 — Palindrome Linked List | Middle + Reverse + Compare |
+
+---
+
+## Approach Comparison
+
+| Metric | Stack Approach | Reversal Approach |
+|---|---|---|
+| Time | O(n) | O(n) |
+| Auxiliary Space | O(n) | O(1) |
+| Extra Data Structure | Stack | None |
+| Modifies Original List | No | Yes |
+| Interview Preference | Good | Optimal space |
+
+---
+
+## Key Takeaway
+
+My initial solution combined **fast/slow pointers and a stack**, achieving O(n) time and O(n) space. To optimize the space, I reused **LC 876 (Find Middle)** and **LC 206 (Reverse Linked List)**: locate the middle, skip it for odd-length lists, reverse the second half in place, and compare node values using two references. This achieves **O(n) time and O(1) auxiliary space**. The most important learning is pointer manipulation during reversal: save `next`, reverse `head.next`, move `previous`, then move `head`. The broader pattern is that reversing part of a linked list can replace an auxiliary stack when backward comparison is needed. This solution modifies the list, so restoring the reversed half may be necessary when the original structure must remain unchanged.
