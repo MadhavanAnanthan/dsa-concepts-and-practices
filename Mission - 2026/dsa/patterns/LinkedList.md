@@ -777,3 +777,225 @@ O(n) Time + O(1) Auxiliary Space
 ## Key Takeaway
 
 My initial solution combined **fast/slow pointers and a stack**, achieving O(n) time and O(n) space. To optimize the space, I reused **LC 876 (Find Middle)** and **LC 206 (Reverse Linked List)**: locate the middle, skip it for odd-length lists, reverse the second half in place, and compare node values using two references. This achieves **O(n) time and O(1) auxiliary space**. The most important learning is pointer manipulation during reversal: save `next`, reverse `head.next`, move `previous`, then move `head`. The broader pattern is that reversing part of a linked list can replace an auxiliary stack when backward comparison is needed. This solution modifies the list, so restoring the reversed half may be necessary when the original structure must remain unchanged.
+
+# 328. Odd Even Linked List
+
+**Problem:** [LeetCode 328](https://leetcode.com/problems/odd-even-linked-list/)
+
+Rearrange the **existing nodes** so that nodes at original odd positions come first, followed by nodes at original even positions. Preserve relative order within each group. Positions are **1-based**, not determined by node values.
+
+**Example:** `1 → 2 → 3 → 4 → 5` becomes `1 → 3 → 5 → 2 → 4`.
+
+**Target:** Time **O(n)**, auxiliary space **O(1)**.
+
+## Pattern recognition
+
+- **Linked-list in-place rearrangement / pointer rewiring**.
+- Split nodes by **original positions**, retain the start of the even chain, then concatenate.
+- Do not confuse changing a local **reference variable** with changing a shared node's **`next` field**.
+
+## Approach 1 — My first attempt: two pointer jumps + two ArrayLists
+
+Collect odd/even *values* using jumping pointers, then overwrite the original list's values.
+
+```java
+class Solution {
+    public ListNode oddEvenList(ListNode head) {
+        ListNode odd = head;
+        ListNode even = head;
+        boolean firstTime = true;
+
+        List<Integer> oddList = new ArrayList<>();
+        List<Integer> evenList = new ArrayList<>();
+
+        while (even != null && even.next != null) {
+            if (firstTime) {
+                oddList.add(odd.val);
+                even = even.next;
+                evenList.add(even.val);
+                firstTime = false;
+            } else {
+                odd = odd.next.next;
+                oddList.add(odd.val);
+                even = even.next.next;
+                if (even != null) {
+                    evenList.add(even.val);
+                }
+            }
+        }
+
+        ListNode result = head;
+        int index = 0;
+        while (index < oddList.size() && head != null) {
+            head.val = oddList.get(index++);
+            head = head.next;
+        }
+        index = 0;
+        while (index < evenList.size() && head != null) {
+            head.val = evenList.get(index++);
+            head = head.next;
+        }
+        return result;
+    }
+}
+```
+
+- **TC:** O(n) (collection + rewriting; constants are ignored).
+- **SC:** O(n) (the two lists store n values in total).
+- **Limitations:** Extra `firstTime` branching; awkward jumps; changes values **rather than rearranging nodes**, so it does **not** satisfy the node-relinking requirement.
+- **Edge case:** A single-node input collects no values, but the original head is returned unchanged.
+
+## Approach 2 — Cleaner value-collection version
+
+Use one traversal pointer and a position counter; keep the same value-rewriting strategy.
+
+```java
+class Solution {
+    public ListNode oddEvenList(ListNode head) {
+        if (head == null) return null;
+
+        List<Integer> oddList = new ArrayList<>();
+        List<Integer> evenList = new ArrayList<>();
+        ListNode current = head;
+        int position = 1;
+
+        while (current != null) {
+            if (position % 2 == 0) {
+                evenList.add(current.val);
+            } else {
+                oddList.add(current.val);
+            }
+            current = current.next;
+            position++;
+        }
+
+        current = head;
+        for (int value : oddList) {
+            current.val = value;
+            current = current.next;
+        }
+        for (int value : evenList) {
+            current.val = value;
+            current = current.next;
+        }
+        return head;
+    }
+}
+```
+
+- **TC:** O(n).
+- **SC:** O(n).
+- **Improvement:** Removes `firstTime`, double jumps, and index-based rewriting.
+- **Still not the required node-rearrangement solution:** Only `val` fields change.
+
+## Approach 3 — Final optimized: rewire existing nodes
+
+Track the tails of the odd and even chains and save the even chain's starting reference.
+
+```java
+class Solution {
+    public ListNode oddEvenList(ListNode head) {
+        if (head == null) {
+            return null;
+        }
+
+        ListNode odd = head;
+        ListNode even = head.next;
+        ListNode evenHead = even;
+
+        while (even != null && even.next != null) {
+            odd.next = odd.next.next;     // Link current odd to next odd
+            odd = odd.next;               // Advance odd reference
+
+            even.next = even.next.next;   // Link current even to next even
+            even = even.next;             // Advance even reference
+        }
+
+        odd.next = evenHead;              // Append even chain after odd chain
+        return head;
+    }
+}
+```
+
+- **TC:** O(n) — each pointer moves through about half the nodes.
+- **SC:** O(1) — only three additional node references; **no new nodes**.
+- **Why `evenHead`?** `even` moves; `evenHead` continues to reference the first even node for final concatenation.
+- **Edge cases:** `null`, one node, two nodes, odd-length and even-length lists.
+
+### Mini trace: `1 → 2 → 3 → 4 → 5`
+
+| Stage | `odd` | `even` | Important rewiring |
+|---|---:|---:|---|
+| Start | 1 | 2 | `evenHead = 2` |
+| Iteration 1 | 3 | 4 | `1.next = 3`, `2.next = 4` |
+| Iteration 2 | 5 | null | `3.next = 5`, `4.next = null` |
+| Finish | 5 | null | `5.next = evenHead (2)` |
+
+**Result:** `1 → 3 → 5 → 2 → 4 → null`.
+
+## Object references & pointer manipulation — concepts to practise
+
+### A. Independent variables, shared objects
+
+```java
+ListNode current = head;  // Both refer to the same first node
+current = current.next;  // Only 'current' moves; 'head' stays
+```
+
+Assignment of a `ListNode` reference copies the **reference**, not the object. Java does not create a new node here.
+
+### B. Reassigning a reference vs mutating a node
+
+```java
+current = current.next;       // Change where the local variable points
+current.next = current.next.next; // Change the actual node's next link
+current.val = 100;            // Change the actual node's value
+```
+
+Other references to the **same node** see its updated `next` and `val`. They do **not** move when `current` is reassigned.
+
+### C. Why odd updates must precede even updates in this code
+
+Initial: `1 → 2 → 3 → 4 → 5`; `odd = 1`, `even = 2`.
+
+**Wrong order:**
+
+```java
+even.next = even.next.next; // 2.next changes from 3 to 4
+odd.next = odd.next.next;   // Now 1.next becomes 4, NOT 3
+```
+
+The later expression follows a link that was already modified. **Pointer writes can change subsequent reads.**
+
+**Working order:**
+
+```java
+odd.next = odd.next.next;   // Preserve 1 → 3 first
+odd = odd.next;
+even.next = even.next.next; // Then preserve 2 → 4
+even = even.next;
+```
+
+### D. Why returning `head` still works
+
+`head` retains the reference to the first node. Updating `odd.next` / `even.next` mutates the nodes reachable from it. Moving `odd` or `even` does not move `head`.
+
+### E. Practice checklist
+
+- Before rewiring `node.next`, ask: **Which node will become unreachable unless I save a reference?**
+- Distinguish `pointer = pointer.next` from `pointer.next = ...`.
+- Trace lists of lengths **0, 1, 2, 4, 5, 6**.
+- Check whether the last even node ends in `null` (avoid cycles).
+- Draw the **actual links** after each assignment, not two imaginary copied lists.
+
+## Complexity summary
+
+| Approach | Time | Auxiliary space | Rearranges actual nodes? |
+|---|---|---|---|
+| 1. Two jumping pointers + ArrayLists | O(n) | O(n) | No |
+| 2. Single pointer + position + ArrayLists | O(n) | O(n) | No |
+| 3. Odd/even pointer rewiring | **O(n)** | **O(1)** | **Yes** |
+
+## One-paragraph takeaway
+
+My first solution collected odd/even-positioned values with two pointers and ArrayLists, achieving O(n) time but O(n) space. The cleaner second solution used one pointer and a position counter, making the same idea easier to read without improving complexity. The final solution works in O(n) time and O(1) extra space by rewiring **existing nodes**. The biggest lesson is Java reference semantics: pointer variables independently track positions, but they share the actual nodes. `odd = odd.next` only moves a variable, while `odd.next = ...` changes the list structure for everyone referencing that node. **Assignment order matters**, because modifying `even.next` too early can make `odd.next.next` follow the wrong node.
