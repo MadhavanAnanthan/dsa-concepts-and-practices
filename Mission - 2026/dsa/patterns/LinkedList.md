@@ -1000,3 +1000,160 @@ even = even.next;
 
 My first solution collected odd/even-positioned values with two pointers and ArrayLists, achieving O(n) time but O(n) space. The cleaner second solution used one pointer and a position counter, making the same idea easier to read without improving complexity. The final solution works in O(n) time and O(1) extra space by rewiring **existing nodes**. The biggest lesson is Java reference semantics: pointer variables independently track positions, but they share the actual nodes. `odd = odd.next` only moves a variable, while `odd.next = ...` changes the list structure for everyone referencing that node. **Assignment order matters**, because modifying `even.next` too early can make `odd.next.next` follow the wrong node.
 In linked-list manipulation, always update pointers in dependency order to avoid overwriting references needed by subsequent operations. In LeetCode 328, process odd nodes before even nodes because the odd update depends on the current even node's next reference. Processing even first would overwrite that link, causing the odd traversal to skip nodes.
+
+// one is pending here
+
+# 2. Add Two Numbers
+
+**LeetCode:** https://leetcode.com/problems/add-two-numbers/  
+**Difficulty:** Medium  
+**Pattern:** Linked List Construction + Digit-by-Digit Simulation (Carry)
+
+## Problem Understanding
+
+Two linked lists represent non-negative integers, with digits stored **in reverse order**. Add the numbers and return the result as a **new linked list**, also in reverse order.
+
+Example:
+
+```text
+l1: 2 -> 4 -> 3   (342)
+l2: 5 -> 6 -> 4   (465)
+---------------------
+out: 7 -> 0 -> 8   (807)
+```
+
+**Core idea:** Traverse both lists together, treat a missing digit as `0`, calculate the sum with carry, and append the result digit to a new list.
+
+- `sum % 10` gives the digit for the current result node.
+- `sum / 10` gives the carry for the next iteration (integer division).
+- The largest per-position sum is `9 + 9 + 1 = 19`.
+
+## Approach 1 — My Initial Solution (Head + Current References)
+
+Construct the first result node separately, save its reference in `finalResult`, and then append future nodes using the moving `result` reference. Handle any remaining carry after traversing both input lists.
+
+```java
+class Solution {
+    public ListNode addTwoNumbers(ListNode l1, ListNode l2) {
+        ListNode result = null;
+        ListNode finalResult = null;
+        int firstDigit = 0;
+        boolean firstTime = true;
+
+        while (l1 != null || l2 != null) {
+            int val1 = 0;
+            int val2 = 0;
+            if (l1 != null) {
+                val1 = l1.val;
+            }
+            if (l2 != null) {
+                val2 = l2.val;
+            }
+
+            int sum = val1 + val2 + firstDigit;
+            firstDigit = 0;
+            int lastDigit = sum % 10;
+            if (sum > 9) {
+                firstDigit = sum / 10;
+            }
+
+            if (firstTime) {
+                firstTime = false;
+                result = new ListNode(lastDigit, null);
+                finalResult = result;
+            } else {
+                result.next = new ListNode(lastDigit, null);
+                result = result.next;
+            }
+
+            l1 = l1 == null ? null : l1.next;
+            l2 = l2 == null ? null : l2.next;
+        }
+
+        if (firstDigit > 0) {
+            result.next = new ListNode(firstDigit, null);
+        }
+        return finalResult;
+    }
+}
+```
+
+**Complexity:**
+- **Time:** `O(max(m, n))` — each input list is traversed once.
+- **Space:** `O(max(m, n))` for the output list; **auxiliary space:** `O(1)`.
+
+**Drawback:** The `firstTime` flag and separate final-carry handling add unnecessary branching.
+
+## Approach 2 — Cleaner Solution (Dummy Node)
+
+Start with a dummy node, append every result digit in the same way, and include `carry != 0` in the loop condition so the last carry is handled automatically.
+
+```java
+class Solution {
+    public ListNode addTwoNumbers(ListNode l1, ListNode l2) {
+        ListNode dummy = new ListNode(0);
+        ListNode current = dummy;
+        int carry = 0;
+
+        while (l1 != null || l2 != null || carry != 0) {
+            int val1 = l1 != null ? l1.val : 0;
+            int val2 = l2 != null ? l2.val : 0;
+            int sum = val1 + val2 + carry;
+
+            carry = sum / 10;
+            current.next = new ListNode(sum % 10);
+            current = current.next;
+
+            if (l1 != null) l1 = l1.next;
+            if (l2 != null) l2 = l2.next;
+        }
+
+        return dummy.next;
+    }
+}
+```
+
+**Complexity:**
+- **Time:** `O(max(m, n))` — one pass through both lists (plus at most one final carry node).
+- **Space:** `O(max(m, n))` for the output list; **auxiliary space:** `O(1)`.
+
+**Improvement:** Fewer conditions and more consistent node insertion; **no asymptotic TC/SC improvement**.
+
+## Pointer Reference Learning
+
+```text
+dummy -> 0 (placeholder)
+current = dummy
+
+Append 7: dummy -> 7       current -> 7
+Append 0: dummy -> 7 -> 0  current -> 0
+Append 8: dummy -> 7 -> 0 -> 8  current -> 8
+
+Return dummy.next (node 7), not current (node 8).
+```
+
+- `current.next = new ListNode(digit)` **connects** the new node.
+- `current = current.next` **moves** the append pointer to that node.
+- `dummy.next` preserves the **head of the actual result**, even when `current` moves.
+- Without moving `current`, the next insertion overwrites the same `.next` link and disconnects previously appended nodes.
+
+## Quick Dry Run — Carry
+
+```text
+l1: 9 -> 9
+l2: 9 -> 9
+
+Position 1: 9 + 9 + 0 = 18 -> node 8, carry 1
+Position 2: 9 + 9 + 1 = 19 -> node 9, carry 1
+Final carry:                    node 1
+
+Result: 8 -> 9 -> 1   (198)
+```
+
+## Pattern Recognition
+
+Use **Linked List Construction + Digit Simulation** when you must compute a result incrementally and build a new linked list. The **dummy node** is a general construction technique, not a specialized algorithm like Floyd's cycle detection.
+
+## One-Paragraph Takeaway
+
+This problem mainly reinforces linked-list traversal, object-reference manipulation, and elementary digit-by-digit addition. My first approach correctly creates and appends nodes by preserving the first node in `finalResult` and moving `result` after each insertion. The cleaner dummy-node approach avoids special handling for the first node: append with `current.next = new ListNode(...)`, advance using `current = current.next`, and return `dummy.next`. Both approaches take **O(max(m, n)) time**, require **O(max(m, n)) output space**, and use only **O(1) auxiliary space**.
