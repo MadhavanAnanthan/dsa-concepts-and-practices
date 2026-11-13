@@ -1157,3 +1157,5 @@ Use **Linked List Construction + Digit Simulation** when you must compute a resu
 ## One-Paragraph Takeaway
 
 This problem mainly reinforces linked-list traversal, object-reference manipulation, and elementary digit-by-digit addition. My first approach correctly creates and appends nodes by preserving the first node in `finalResult` and moving `result` after each insertion. The cleaner dummy-node approach avoids special handling for the first node: append with `current.next = new ListNode(...)`, advance using `current = current.next`, and return `dummy.next`. Both approaches take **O(max(m, n)) time**, require **O(max(m, n)) output space**, and use only **O(1) auxiliary space**.
+
+// need to add intersion of LL
