@@ -1159,3 +1159,881 @@ Use **Linked List Construction + Digit Simulation** when you must compute a resu
 This problem mainly reinforces linked-list traversal, object-reference manipulation, and elementary digit-by-digit addition. My first approach correctly creates and appends nodes by preserving the first node in `finalResult` and moving `result` after each insertion. The cleaner dummy-node approach avoids special handling for the first node: append with `current.next = new ListNode(...)`, advance using `current = current.next`, and return `dummy.next`. Both approaches take **O(max(m, n)) time**, require **O(max(m, n)) output space**, and use only **O(1) auxiliary space**.
 
 // need to add intersion of LL
+
+# 21. Merge Two Sorted Lists
+
+**Problem:** [LeetCode 21 — Merge Two Sorted Lists](https://leetcode.com/problems/merge-two-sorted-lists/)
+
+**Pattern:** Two pointers + dummy head + linked-list pointer manipulation (merge step of merge sort).
+
+Given two sorted linked lists, merge their values into one sorted linked list. Let `m` and `n` be their respective lengths.
+
+## Approach 1 — Collect, sort, and rebuild (initial idea)
+
+Traverse both lists, collect values, sort them, and create a new linked list.
+
+```java
+import java.util.*;
+
+class Solution {
+    public ListNode mergeTwoLists(ListNode list1, ListNode list2) {
+        List<Integer> values = new ArrayList<>();
+        while (list1 != null) {
+            values.add(list1.val);
+            list1 = list1.next;
+        }
+        while (list2 != null) {
+            values.add(list2.val);
+            list2 = list2.next;
+        }
+
+        Collections.sort(values);
+        ListNode dummy = new ListNode(0);
+        ListNode current = dummy;
+        for (int value : values) {
+            current.next = new ListNode(value);
+            current = current.next;
+        }
+        return dummy.next;
+    }
+}
+```
+
+- **TC:** O((m+n) log(m+n)) due to sorting.
+- **SC:** O(m+n) for collected values and the new linked list, excluding sorting implementation overhead.
+- **Limitation:** Sorting wastes the fact that *both inputs are already sorted*.
+
+## Approach 2 — Two pointers; handle null inside the loop (my first working code)
+
+```java
+class Solution {
+    public ListNode mergeTwoLists(ListNode list1, ListNode list2) {
+        ListNode dummy = new ListNode(0);
+        ListNode current = dummy;
+
+        while (list1 != null || list2 != null) {
+            if (list1 != null && (list2 == null || list1.val <= list2.val)) {
+                current.next = new ListNode(list1.val);
+                list1 = list1.next;
+            } else {
+                current.next = new ListNode(list2.val);
+                list2 = list2.next;
+            }
+            current = current.next;
+        }
+        return dummy.next;
+    }
+}
+```
+
+- **TC:** O(m+n): one input pointer advances each iteration.
+- **SC:** O(m+n): a new node is allocated for each input node.
+- **Learning:** `current.next = new ListNode(...)` **links** a new node; `current = current.next` **moves** the tail pointer. `dummy.next` is the actual result head.
+
+## Approach 3 — Cleaner loop; attach the remainder (my improved code)
+
+```java
+class Solution {
+    public ListNode mergeTwoLists(ListNode list1, ListNode list2) {
+        ListNode dummy = new ListNode(0);
+        ListNode current = dummy;
+
+        while (list1 != null && list2 != null) {
+            if (list1.val <= list2.val) {
+                current.next = new ListNode(list1.val);
+                list1 = list1.next;
+            } else {
+                current.next = new ListNode(list2.val);
+                list2 = list2.next;
+            }
+            current = current.next;
+        }
+
+        if (list1 != null) {
+            current.next = list1;
+        } else {
+            current.next = list2;
+        }
+        return dummy.next;
+    }
+}
+```
+
+- **TC:** O(m+n).
+- **SC:** **O(m+n) in the worst case**: you create a new node for every comparison until one list ends. Although the remainder is reused, the number of comparisons can still reach `m+n-1` (e.g., if one list's only value comes after nearly all values of the other). The exact new-node count depends on ordering.
+- **Improvement:** No repeated null comparison inside the main loop; remaining nodes attach in O(1) time.
+- **Trade-off:** Output may be a mixture of new nodes and original nodes. If the original lists must remain fully independent of the result, use Approach 2 instead.
+
+## Approach 4 — Optimal: reuse existing nodes, O(1) auxiliary space
+
+```java
+class Solution {
+    public ListNode mergeTwoLists(ListNode list1, ListNode list2) {
+        ListNode dummy = new ListNode(0);
+        ListNode current = dummy;
+
+        while (list1 != null && list2 != null) {
+            if (list1.val <= list2.val) {
+                current.next = list1; // link existing node
+                list1 = list1.next;
+            } else {
+                current.next = list2; // link existing node
+                list2 = list2.next;
+            }
+            current = current.next;
+        }
+
+        current.next = (list1 != null) ? list1 : list2;
+        return dummy.next;
+    }
+}
+```
+
+- **TC:** O(m+n): each input node is processed at most once.
+- **Auxiliary SC:** O(1): one dummy node and a few references; no new result nodes.
+- **Trade-off:** Re-links existing input nodes, so the original list structures are modified.
+
+## Complexity summary
+
+| Approach | Time | Auxiliary space | Allocates result nodes? |
+|---|---|---|---|
+| 1. Collect + sort | O((m+n) log(m+n)) | O(m+n) | Yes, all |
+| 2. Two pointers + `\|\|` loop | O(m+n) | O(m+n) | Yes, all |
+| 3. Two pointers + `&&` loop + remainder | O(m+n) | **O(m+n) worst case** | Some; remainder reused |
+| 4. Reuse existing nodes | **O(m+n)** | **O(1)** | No (except dummy) |
+
+> Complexity note: The earlier claim that Approach 3 has O(min(m,n)) space was incorrect. A single node in one list can be larger than all the values in a much longer other list, causing many new nodes to be allocated before either list ends.
+
+## Similar problem / pattern recognition
+
+- **Merge Two Sorted Arrays Without Extra Space:** both problems exploit sorted input and compare elements using two pointers; arrays require swaps/shifts or a gap-style technique when extra array storage is unavailable, whereas linked lists can reuse/relink existing nodes.
+- **Merge Sorted Array (LeetCode 88):** same merge principle, but uses index pointers and often merges from the back to fit in `nums1`.
+- **Merge step in Merge Sort:** identical sorted-sequence merge idea, using either array indices or linked-list references.
+
+## Pitfalls to remember
+
+- `current = new ListNode(value)` **reassigns a local reference**, not the previous node's `next`.
+- `current.next = ...` **attaches** the next node; then `current = current.next` **advances** the result tail.
+- Return `dummy.next`, **not** `dummy`.
+- Handle equal values (`<=`) so a pointer always advances; each step should append/select one node.
+- Once either input reaches null, append the entire remaining chain.
+- Avoid magic sentinel values such as `-101` when null checks express the cases clearly.
+
+## Takeaway for tracker
+
+**Merge Two Sorted Lists — Two-pointer merge + dummy node.** My initial collect-and-sort approach was O((m+n) log(m+n)); I improved it to O(m+n) by comparing heads of already-sorted linked lists. `dummy` preserves the head, `current.next` attaches nodes, and `current = current.next` advances the tail. A clean `&&` loop compares while both lists exist, then attaches the remainder. Reusing all existing nodes reduces auxiliary space to O(1), while creating new result nodes uses O(m+n) space in the worst case. **Similar pattern:** merging two sorted arrays / merge step of merge sort.
+
+# 61. Rotate List
+
+**Problem:** [LeetCode 61 — Rotate List](https://leetcode.com/problems/rotate-list/)
+
+**Pattern:** Linked List · Pointer Manipulation · Rotation · Modulo
+
+Given a linked list, rotate it **right** by `k` positions.
+
+```text
+Input:  1 → 2 → 3 → 4 → 5 → null, k = 3
+Output: 3 → 4 → 5 → 1 → 2 → null
+```
+
+A full `n` rotations returns the original list, so use `k %= n` (after checking for an empty list).
+
+---
+
+## Approach 1 — ArrayList (Brute Force)
+
+**Idea:** Store values in an `ArrayList`, compute the effective rotation, and build a new linked list in the required order. This avoids manipulating the original node links.
+
+> Initial thought: reverse the ArrayList, then insert values at the head. Be careful: reversing and repeated head insertion can cancel each other out. Direct indexing is easier and more reliable.
+
+```java
+class Solution {
+    public ListNode rotateRight(ListNode head, int k) {
+        if (head == null || k == 0) return head;
+
+        List<Integer> values = new ArrayList<>();
+        ListNode current = head;
+        while (current != null) {
+            values.add(current.val);
+            current = current.next;
+        }
+
+        int n = values.size();
+        k %= n;
+        if (k == 0) return head;
+
+        ListNode dummy = new ListNode(0);
+        ListNode tail = dummy;
+
+        // New list begins with the final k values.
+        for (int i = 0; i < n; i++) {
+            int originalIndex = (n - k + i) % n;
+            tail.next = new ListNode(values.get(originalIndex));
+            tail = tail.next;
+        }
+
+        return dummy.next;
+    }
+}
+```
+
+**Complexity**
+- **TC:** `O(n)` — one traversal to collect values + one to rebuild. ArrayList access is `O(1)`.
+- **SC:** `O(n)` — `n` stored values and `n` new result nodes.
+
+---
+
+## Approach 2 — Optimal: Reuse Existing Nodes (Pointer Relinking)
+
+**Idea:** Calculate the size and preserve the old tail. The new tail is at **1-based position `n - (k % n)`**; its next node is the new head. Break at the new tail and attach the old tail to the original head.
+
+```java
+class Solution {
+    public ListNode rotateRight(ListNode head, int k) {
+        if (head == null || head.next == null || k == 0) {
+            return head;
+        }
+
+        // 1. Find list length and preserve old tail.
+        int n = 1;
+        ListNode oldTail = head;
+        while (oldTail.next != null) {
+            oldTail = oldTail.next;
+            n++;
+        }
+
+        // 2. Ignore complete rotations.
+        k %= n;
+        if (k == 0) return head;
+
+        // 3. Locate new tail (1-based position n - k).
+        ListNode newTail = head;
+        for (int i = 1; i < n - k; i++) {
+            newTail = newTail.next;
+        }
+
+        // 4. Preserve the new head before cutting the link.
+        ListNode newHead = newTail.next;
+
+        // 5. Reconnect the two segments.
+        newTail.next = null;
+        oldTail.next = head;
+
+        return newHead;
+    }
+}
+```
+
+**Complexity**
+- **TC:** `O(n)` — length/tail traversal + traversal to the new tail.
+- **Auxiliary SC:** `O(1)` — only a constant number of node references; no new nodes.
+
+### Dry run: `1 → 2 → 3 → 4 → 5`, `k = 3`
+
+```text
+n = 5; k = 3 % 5 = 3; newTail position = 5 - 3 = 2
+
+head         newTail newHead       oldTail
+ ↓              ↓      ↓             ↓
+ 1 ───────────→ 2 ───→ 3 → 4 ───────→ 5 → null
+
+Save newHead = newTail.next  // node 3
+newTail.next = null         // 2 → null
+oldTail.next = head         // 5 → 1
+
+Returned from newHead:
+3 → 4 → 5 → 1 → 2 → null
+```
+
+### Reference-manipulation lesson
+
+| Statement | Meaning | Modifies node structure? |
+|---|---|---|
+| `current = current.next` | Move the local reference to another node | No |
+| `current = new ListNode(7)` | Point `current` at a different object | No |
+| `current.next = null` | Break the link inside the referenced node | Yes |
+| `oldTail.next = head` | Connect the old last node to the original first node | Yes |
+| `newHead = newTail.next` | Save a reference before breaking the link | No |
+
+**Critical distinction:** `head`, `current`, `oldTail`, and `newHead` are reference variables. They may point to **different nodes** in the same chain. Reassigning a reference does not modify an existing node; assigning a node's `.next` changes the shared structure reachable through other references.
+
+---
+
+## Comparison
+
+| Approach | Time | Auxiliary space | Mutates original nodes? |
+|---|---|---|---|
+| ArrayList + rebuild | `O(n)` | `O(n)` | No (for nonzero effective rotation) |
+| Find tail + relink | `O(n)` | **`O(1)`** | Yes |
+
+## Edge Cases
+
+- Empty list → return `head` before calculating `k % n`.
+- One-node list → unchanged.
+- `k = 0` → unchanged.
+- `k` is a multiple of `n` → unchanged.
+- `k > n` → use `k %= n`.
+
+## Similar Problems / Pattern Recognition
+
+- **21. Merge Two Sorted Lists** — link nodes using references; dummy head and moving tail reference.
+- **206. Reverse Linked List** — preserve `next` before rewiring pointers.
+- **19. Remove Nth Node From End of List** — locate a split/removal position and update `.next`.
+- **189. Rotate Array** — rotation and modulo, but arrays require different movement/reversal techniques.
+
+## One-Paragraph Takeaway (Excel Tracker)
+
+Rotate List — Initially considered collecting values in an ArrayList and rebuilding the rotated list (`O(n)` TC, `O(n)` SC). Optimized by finding the length and old tail, calculating effective rotations with `k % n`, locating the new tail at 1-based position `n-k`, preserving `newHead = newTail.next`, breaking `newTail.next`, and connecting `oldTail.next = head` (`O(n)` TC, `O(1)` auxiliary SC). Core learning: **moving a reference (`current = current.next`) does not change nodes; modifying `.next` changes the actual shared linked-list structure.**
+
+# 707. Design Linked List (Java)
+
+**Problem:** [LeetCode 707 — Design Linked List](https://leetcode.com/problems/design-linked-list/)
+
+**Pattern:** Singly Linked List · Object References · Predecessor Node · Data Structure Design
+
+## Core idea
+
+Implement `get`, `addAtHead`, `addAtTail`, `addAtIndex`, and `deleteAtIndex` without using Java's built-in `LinkedList`. Each `MyLinkedList` object maintains its own state; nodes are separate objects connected using `next` references.
+
+**Index rules:** Indices are zero-based. `get` returns `-1` for an invalid index. `addAtIndex(index, val)` inserts at the head for `index <= 0`, appends for `index == size`, and does nothing for `index > size`. `deleteAtIndex` ignores invalid indices.
+
+---
+
+## Approach 1 — Original: Head-only singly linked list
+
+Maintain only `head`. Traverse to find an index, the tail, or the predecessor of a node.
+
+```java
+class MyLinkedList {
+    private ListNode head;
+
+    private static class ListNode {
+        int val;
+        ListNode next;
+
+        ListNode(int val) {
+            this.val = val;
+        }
+
+        ListNode(int val, ListNode next) {
+            this.val = val;
+            this.next = next;
+        }
+    }
+
+    public MyLinkedList() {
+        head = null;
+    }
+
+    public int get(int index) {
+        if (index < 0) return -1;
+
+        ListNode current = head;
+        int i = 0;
+        while (current != null) {
+            if (i == index) return current.val;
+            current = current.next;
+            i++;
+        }
+        return -1;
+    }
+
+    public void addAtHead(int val) {
+        head = new ListNode(val, head);
+    }
+
+    public void addAtTail(int val) {
+        if (head == null) {
+            addAtHead(val);
+            return;
+        }
+
+        ListNode current = head;
+        while (current.next != null) {
+            current = current.next;
+        }
+        current.next = new ListNode(val);
+    }
+
+    public void addAtIndex(int index, int val) {
+        if (index <= 0) {
+            addAtHead(val);
+            return;
+        }
+
+        ListNode current = head;
+        int i = 0;
+        while (current != null) {
+            if (i == index - 1) {
+                current.next = new ListNode(val, current.next);
+                return;
+            }
+            current = current.next;
+            i++;
+        }
+    }
+
+    public void deleteAtIndex(int index) {
+        if (head == null || index < 0) return;
+        if (index == 0) {
+            head = head.next;
+            return;
+        }
+
+        ListNode current = head;
+        int i = 0;
+        while (current != null) {
+            if (i == index - 1) {
+                if (current.next != null) {
+                    current.next = current.next.next;
+                }
+                return;
+            }
+            current = current.next;
+            i++;
+        }
+    }
+}
+```
+
+**Time:** `get` O(n), `addAtHead` O(1), `addAtTail` O(n), `addAtIndex` O(n), `deleteAtIndex` O(n). **Auxiliary space:** O(1) per operation. **Stored nodes:** O(n).
+
+---
+
+## Approach 2 — Better: Head + Size
+
+Maintain a `size` counter to reject invalid indices immediately, without traversing. Tail insertion is still O(n).
+
+```java
+class MyLinkedList {
+    private Node head;
+    private int size;
+
+    private static class Node {
+        int val;
+        Node next;
+        Node(int val) { this.val = val; }
+        Node(int val, Node next) { this.val = val; this.next = next; }
+    }
+
+    public MyLinkedList() {
+        head = null;
+        size = 0;
+    }
+
+    public int get(int index) {
+        if (index < 0 || index >= size) return -1;
+        Node current = head;
+        for (int i = 0; i < index; i++) current = current.next;
+        return current.val;
+    }
+
+    public void addAtHead(int val) {
+        head = new Node(val, head);
+        size++;
+    }
+
+    public void addAtTail(int val) {
+        if (size == 0) {
+            addAtHead(val);
+            return;
+        }
+        Node current = head;
+        while (current.next != null) current = current.next;
+        current.next = new Node(val);
+        size++;
+    }
+
+    public void addAtIndex(int index, int val) {
+        if (index > size) return;
+        if (index <= 0) {
+            addAtHead(val);
+            return;
+        }
+        Node previous = head;
+        for (int i = 0; i < index - 1; i++) previous = previous.next;
+        previous.next = new Node(val, previous.next);
+        size++;
+    }
+
+    public void deleteAtIndex(int index) {
+        if (index < 0 || index >= size) return;
+        if (index == 0) {
+            head = head.next;
+        } else {
+            Node previous = head;
+            for (int i = 0; i < index - 1; i++) previous = previous.next;
+            previous.next = previous.next.next;
+        }
+        size--;
+    }
+}
+```
+
+**Improvement:** `size` makes index validity checks O(1); valid indexed traversal still takes O(n), and `addAtTail` still takes O(n).
+
+---
+
+## Approach 3 — Optimized: Head + Tail + Size
+
+Maintain these **invariants**:
+
+- `size == 0` ⇒ `head == null` and `tail == null`.
+- `size > 0` ⇒ `head != null`, `tail != null`, and `tail.next == null`.
+- `size` equals the number of reachable nodes from `head`.
+
+```java
+class MyLinkedList {
+    private Node head;
+    private Node tail;
+    private int size;
+
+    private static class Node {
+        int val;
+        Node next;
+
+        Node(int val) {
+            this.val = val;
+        }
+
+        Node(int val, Node next) {
+            this.val = val;
+            this.next = next;
+        }
+    }
+
+    public MyLinkedList() {
+        head = null;
+        tail = null;
+        size = 0;
+    }
+
+    public int get(int index) {
+        if (index < 0 || index >= size) return -1;
+
+        Node current = head;
+        for (int i = 0; i < index; i++) {
+            current = current.next;
+        }
+        return current.val;
+    }
+
+    public void addAtHead(int val) {
+        Node node = new Node(val, head);
+        head = node;
+        if (size == 0) {
+            tail = node; // First node is both head and tail
+        }
+        size++;
+    }
+
+    public void addAtTail(int val) {
+        Node node = new Node(val);
+        if (size == 0) {
+            head = node;
+        } else {
+            tail.next = node;
+        }
+        tail = node;
+        size++;
+    }
+
+    public void addAtIndex(int index, int val) {
+        if (index > size) return;
+        if (index <= 0) {
+            addAtHead(val);
+            return;
+        }
+        if (index == size) {
+            addAtTail(val);
+            return;
+        }
+
+        Node previous = head;
+        for (int i = 0; i < index - 1; i++) {
+            previous = previous.next;
+        }
+        previous.next = new Node(val, previous.next);
+        size++;
+    }
+
+    public void deleteAtIndex(int index) {
+        if (index < 0 || index >= size) return;
+
+        if (index == 0) {
+            head = head.next;
+            size--;
+            if (size == 0) {
+                tail = null; // Last node removed
+            }
+            return;
+        }
+
+        Node previous = head;
+        for (int i = 0; i < index - 1; i++) {
+            previous = previous.next;
+        }
+
+        if (previous.next == tail) {
+            tail = previous; // Removing the last node
+        }
+        previous.next = previous.next.next;
+        size--;
+    }
+}
+```
+
+### Complexity comparison
+
+Let `n` be the current number of nodes. These are **worst-case** time bounds; successful insertion at the head and direct tail insertion are constant time.
+
+| Operation | Head only | Head + size | Head + tail + size | Extra working space |
+|---|---:|---:|---:|---:|
+| Constructor | O(1) | O(1) | O(1) | O(1) |
+| `get(index)` | O(n) | O(n) | O(n) | O(1) |
+| `addAtHead(val)` | O(1) | O(1) | O(1) | O(1) |
+| `addAtTail(val)` | O(n) | O(n) | **O(1)** | O(1) |
+| `addAtIndex(index, val)` | O(n) | O(n) | O(n) | O(1) |
+| `deleteAtIndex(index)` | O(n) | O(n) | O(n) | O(1) |
+
+**Nuance:** In the optimized version, `addAtIndex(index == size)` is O(1) because it delegates to `addAtTail`. Invalid-index checks are O(1) with `size`. All versions store O(n) nodes overall; each insertion allocates one node, which is O(1) per call.
+
+**Note:** A doubly linked list can traverse from the nearer end and makes deletion of a *known node* easier, but index-based `get`/insertion/deletion still have O(n) worst-case time. For this problem, head + tail + size in a singly linked list is a strong balance of simplicity and efficiency.
+
+---
+
+## Pointer manipulation — critical learning
+
+Suppose `10 → 20 → 30`, and `current` points to node `10`.
+
+**Insert 15 at index 1:**
+
+```java
+Node newNode = new Node(15, current.next); // 15.next → 20
+current.next = newNode;                    // 10.next → 15
+// 10 → 15 → 20 → 30
+```
+
+**Delete node 20 (index 1):**
+
+```java
+current.next = current.next.next;
+// 10 → 30
+```
+
+**Moving vs modifying references:**
+
+```java
+current = current.next;       // Reassigns local reference; does NOT change links
+current.next = new Node(40); // Changes the actual node's next link
+```
+
+Find the **predecessor** (`index - 1`) for indexed insertion/deletion. Always preserve any necessary link *before* overwriting it.
+
+### Edge cases checklist
+
+- [ ] Empty list: get/delete safely; head/tail insertion creates first node
+- [ ] One-node list: deleting index 0 resets **both** head and tail
+- [ ] Negative insertion index inserts at head
+- [ ] Negative get/delete index is invalid
+- [ ] `index == size` appends
+- [ ] `index > size` insertion is ignored
+- [ ] `index >= size` get/delete is invalid
+- [ ] Removing the tail updates `tail`
+- [ ] Adding after deleting the final node still works
+
+### Related problems / patterns
+
+- **21. Merge Two Sorted Lists** — dummy node and tail pointer for append
+- **206. Reverse Linked List** — pointer reassignment and link reversal
+- **19. Remove Nth Node From End of List** — find the predecessor, then bypass a node
+- **61. Rotate List** — preserve head/tail references and reconnect links
+- **707. Design Linked List** — maintain class-level invariants across operations
+
+## Excel tracker takeaway
+
+> **707. Design Linked List —** Built a custom singly linked list using an instance-level `head` and a static node class. Learned to locate the predecessor (`index - 1`) for insertion/deletion, preserve `next` links, and distinguish moving a reference (`current = current.next`) from modifying the shared node (`current.next = ...`). Improved the design from head-only to head + size and finally head + tail + size: `addAtTail` improves from O(n) to O(1), invalid-index checks become O(1), indexed operations remain O(n), and each operation uses O(1) auxiliary space. Maintain `head`, `tail`, and `size` invariants, especially for empty lists and tail deletion.
+
+# 203. Remove Linked List Elements
+
+**Problem:** [LeetCode 203 — Remove Linked List Elements](https://leetcode.com/problems/remove-linked-list-elements/)
+
+**Pattern:** Linked List · Traversal · Previous/Current References · Dummy Node · In-place Deletion
+
+## Problem
+
+Given the `head` of a singly linked list and an integer `val`, remove **all nodes** whose value equals `val`, and return the updated head.
+
+**Example**
+
+```text
+Input:  1 → 2 → 6 → 3 → 4 → 5 → 6 → null, val = 6
+Output: 1 → 2 → 3 → 4 → 5 → null
+```
+
+## Approach Comparison
+
+Let `n` = number of nodes in the input list.
+
+| Approach | Time complexity | Auxiliary space complexity | Modifies input nodes? |
+|---|---|---|---|
+| 1. Brute force: ArrayList + rebuild | O(n) | O(n) | No |
+| 2. Better: remove matching heads, then `previous`/`current` | O(n) | O(1) | Yes |
+| 3. Clean optimal: dummy node | O(n) | O(1) | Yes |
+
+> All approaches take O(n) time. Approaches 2 and 3 have optimal O(1) auxiliary space. Approach 3 is simpler because it does not special-case the head.
+
+---
+
+## 1. Brute Force — ArrayList + New Linked List
+
+**Idea:** Store values not equal to `val`, then create a new linked list from those values.
+
+```java
+import java.util.ArrayList;
+import java.util.List;
+
+class Solution {
+    public ListNode removeElements(ListNode head, int val) {
+        List<Integer> values = new ArrayList<>();
+        ListNode current = head;
+
+        while (current != null) {
+            if (current.val != val) {
+                values.add(current.val);
+            }
+            current = current.next;
+        }
+
+        ListNode dummy = new ListNode(0);
+        current = dummy;
+
+        for (int value : values) {
+            current.next = new ListNode(value);
+            current = current.next;
+        }
+
+        return dummy.next;
+    }
+}
+```
+
+**TC:** O(n) — one traversal to collect and another to rebuild (at most `n` nodes).
+
+**Auxiliary SC:** O(n) — ArrayList and new output nodes (O(n) total memory).
+
+**Drawback:** Allocates extra nodes and an additional collection even though links can be updated directly.
+
+---
+
+## 2. Better — Your `previous` and `current` Approach
+
+**Idea:** First remove consecutive matching nodes from the head. Then bypass matching nodes using the predecessor reference.
+
+**Your code, cleaned up:** Removed the incorrect `if (val == 0) return head;` because zero is a valid value to remove.
+
+```java
+class Solution {
+    public ListNode removeElements(ListNode head, int val) {
+        // Remove matching nodes from the beginning.
+        while (head != null && head.val == val) {
+            head = head.next;
+        }
+
+        ListNode previous = head;
+        ListNode current = head;
+
+        while (current != null) {
+            if (current.val == val) {
+                previous.next = current.next;
+                // Keep previous where it is after deletion.
+            } else {
+                previous = current;
+            }
+            current = current.next;
+        }
+
+        return head;
+    }
+}
+```
+
+**TC:** O(n) — removed head nodes are not revisited, and the remaining list is traversed once.
+
+**Auxiliary SC:** O(1) — only a few node references; no new nodes.
+
+**Critical pointer rule:** Advance `previous` **only when the node is kept**. When deleting `current`, keep `previous` at the last retained node so consecutive matches are also removed.
+
+---
+
+## 3. Clean Optimal — Dummy Node
+
+**Idea:** Use a dummy predecessor before `head` so deleting the original head works exactly like deleting any other node.
+
+```java
+class Solution {
+    public ListNode removeElements(ListNode head, int val) {
+        ListNode dummy = new ListNode(0, head);
+        ListNode current = dummy;
+
+        while (current.next != null) {
+            if (current.next.val == val) {
+                current.next = current.next.next;
+            } else {
+                current = current.next;
+            }
+        }
+
+        return dummy.next;
+    }
+}
+```
+
+**TC:** O(n) — each original node is checked once.
+
+**Auxiliary SC:** O(1) — a single dummy node and a traversal reference.
+
+**Why it's cleaner:** No separate loop for matching head nodes, and no second pointer is needed. The same condition removes nodes at the head, middle, or tail.
+
+---
+
+## Dry Run — Consecutive Matches
+
+```text
+Input:  6 → 6 → 1 → 6 → 6 → 2 → null
+val:    6
+
+Remove leading 6s:   head → 1 → 6 → 6 → 2
+Remove middle 6s:    head → 1 → 2 → null
+```
+
+For the dummy-node version, when `current.next` matches, change `current.next` but **do not advance `current`**. That allows the next consecutive match to be checked.
+
+## Edge Cases
+
+- `head == null` → return `null`.
+- All nodes match `val` → return `null`.
+- Multiple matching nodes at the beginning or middle → remove all.
+- No nodes match → return original list unchanged.
+- `val == 0` → still remove matching nodes; do **not** return early.
+
+## Pointer / Reference Learning
+
+| Operation | Effect |
+|---|---|
+| `current = current.next` | Moves a local reference; does not alter the links |
+| `previous.next = current.next` | Bypasses the current node in the actual list |
+| `head = head.next` | Moves the head reference; useful for matching initial nodes |
+| `current.next = current.next.next` | Bypasses the node immediately after `current` |
+
+**Pattern recognition:** When deletion can affect the head, either handle the head separately or add a **dummy predecessor** to unify deletion cases.
+
+## Similar Problems
+
+- [19. Remove Nth Node From End of List](https://leetcode.com/problems/remove-nth-node-from-end-of-list/) — dummy node + predecessor/two pointers.
+- [707. Design Linked List](https://leetcode.com/problems/design-linked-list/) — delete at index by rewiring predecessor's `next`.
+- [83. Remove Duplicates from Sorted List](https://leetcode.com/problems/remove-duplicates-from-sorted-list/) — bypass unwanted nodes using `next`.
+
+## Excel Tracker Takeaway
+
+**203. Remove Linked List Elements — Traversal + Previous/Current + Dummy Node:** Initially considered collecting non-matching values in an ArrayList and rebuilding the list (TC O(n), SC O(n)). Improved to in-place deletion using `previous`/`current` (TC O(n), SC O(1)). Learned to remove consecutive matching head nodes separately and keep `previous` unchanged after deleting a node. The cleanest approach uses a dummy node to handle head, middle, tail, and consecutive deletions uniformly (TC O(n), SC O(1)).
