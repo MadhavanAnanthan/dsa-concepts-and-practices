@@ -2037,3 +2037,347 @@ For the dummy-node version, when `current.next` matches, change `current.next` b
 ## Excel Tracker Takeaway
 
 **203. Remove Linked List Elements — Traversal + Previous/Current + Dummy Node:** Initially considered collecting non-matching values in an ArrayList and rebuilding the list (TC O(n), SC O(n)). Improved to in-place deletion using `previous`/`current` (TC O(n), SC O(1)). Learned to remove consecutive matching head nodes separately and keep `previous` unchanged after deleting a node. The cleanest approach uses a dummy node to handle head, middle, tail, and consecutive deletions uniformly (TC O(n), SC O(1)).
+
+
+# LeetCode 83 — Remove Duplicates from Sorted List
+
+**Problem:** [83. Remove Duplicates from Sorted List](https://leetcode.com/problems/remove-duplicates-from-sorted-list/)
+
+**Pattern:** Linked List · In-place deletion · Adjacent comparison (sorted list)
+
+## Problem understanding
+
+Given the head of a **sorted** singly linked list, remove duplicate nodes so each value appears **once**. Keep the original sorted order.
+
+```text
+Input:  1 → 1 → 2 → 3 → 3 → null
+Output: 1 → 2 → 3 → null
+```
+
+**Key observation:** Because the list is sorted, duplicates are always adjacent. We only need to compare neighboring values; no HashSet is required.
+
+## Approach 1 — Brute force: collect unique values, build a new list
+
+Traverse the sorted list and collect a value only if it differs from the last collected value. Then create a **new** linked list using those values. This is simple but uses extra space and new nodes.
+
+```java
+import java.util.ArrayList;
+import java.util.List;
+
+class Solution {
+    public ListNode deleteDuplicates(ListNode head) {
+        List<Integer> unique = new ArrayList<>();
+        ListNode current = head;
+
+        while (current != null) {
+            if (unique.isEmpty() || unique.get(unique.size() - 1) != current.val) {
+                unique.add(current.val);
+            }
+            current = current.next;
+        }
+
+        ListNode dummy = new ListNode(0);
+        ListNode tail = dummy;
+
+        for (int value : unique) {
+            tail.next = new ListNode(value);
+            tail = tail.next;
+        }
+        return dummy.next;
+    }
+}
+```
+
+- **Time complexity:** O(n) — one pass to collect and one to rebuild.
+- **Auxiliary space:** O(n) — ArrayList and newly created output nodes (O(n) total additional allocation).
+
+## Approach 2 — Your solution: previous node + current node (optimal)
+
+Your approach **reuses existing nodes** and removes a duplicate by bypassing its reference. `previousNode` stays on the last **kept** node when a duplicate is found.
+
+```java
+class Solution {
+    public ListNode deleteDuplicates(ListNode head) {
+        if (head == null) {
+            return head;
+        }
+
+        ListNode current = head;
+        ListNode previousNode = head;
+        int previousValue = current.val;
+        current = current.next;
+
+        while (current != null) {
+            int currentValue = current.val;
+
+            if (currentValue == previousValue) {
+                previousNode.next = current.next;
+            } else {
+                previousNode = current;
+                previousValue = previousNode.val;
+            }
+
+            current = current.next;
+        }
+        return head;
+    }
+}
+```
+
+- **Time complexity:** O(n) — each node is visited once.
+- **Auxiliary space:** O(1) — a fixed number of references and variables.
+- **Good:** Handles empty lists, all-duplicate lists, and multiple consecutive duplicates.
+- **Can simplify:** `previousValue` and a separate `previousNode` are not necessary because the sorted list allows comparison with `current.next` directly.
+
+## Approach 3 — Clean optimal solution: one pointer
+
+Keep `current` at the last retained node. If the next node has the same value, skip it. **Do not advance `current` after deletion**, because further duplicates might follow.
+
+```java
+class Solution {
+    public ListNode deleteDuplicates(ListNode head) {
+        ListNode current = head;
+
+        while (current != null && current.next != null) {
+            if (current.val == current.next.val) {
+                current.next = current.next.next; // Skip duplicate node
+            } else {
+                current = current.next;           // Move only if values differ
+            }
+        }
+
+        return head;
+    }
+}
+```
+
+- **Time complexity:** O(n).
+- **Auxiliary space:** O(1).
+- **Why it is cleaner:** No extra integer, no previous pointer, no dummy node, and no special case for `head == null`.
+
+## Dry run — clean solution
+
+```text
+1 → 1 → 1 → 2 → 3 → 3
+^ current
+
+1 == next 1 → current.next = current.next.next
+1 → 1 → 2 → 3 → 3
+^ current stays here
+
+1 == next 1 → skip again
+1 → 2 → 3 → 3
+^ current stays here
+
+1 != 2 → move current to 2
+2 != 3 → move current to 3
+3 == next 3 → skip duplicate
+
+Result: 1 → 2 → 3 → null
+```
+
+## Comparison
+
+| Approach | Time | Auxiliary space | Creates new nodes? |
+|---|---|---|---|
+| ArrayList + rebuild (brute force) | O(n) | O(n) | Yes |
+| Your `previousNode` + `current` | O(n) | O(1) | No |
+| One-pointer in-place (clean optimal) | O(n) | O(1) | No |
+
+## Reference-management lessons
+
+- `previousNode.next = current.next` **bypasses** the duplicate. It does not delete the object from memory immediately; the removed node becomes unreachable from the returned list when no other references keep it alive.
+- In your solution, on duplicates, **don't move `previousNode`**: it must remain at the last retained node.
+- In the one-pointer solution, on duplicates, **don't move `current`**: you must check whether another duplicate follows.
+- Because the list is **sorted**, checking adjacent nodes is sufficient. This exact approach does not remove all duplicates in an **unsorted** list.
+- This problem (LC 83) keeps **one occurrence** of each value. LC 82 removes **all values that appear more than once**; they are different tasks.
+
+## One-paragraph takeaway (Excel-ready)
+
+Initially, I used `previousNode`, `current`, and `previousValue` to remove duplicates by updating `previousNode.next` whenever two values matched. My solution worked with O(n) time and O(1) space, but I learned that because the list is sorted, I can simply compare `current.val` with `current.next.val`. If they match, I skip the next node without moving `current`; otherwise, I move forward. The key learning is to keep the pointer on the last valid node until all consecutive duplicates are removed.
+
+
+
+# LeetCode 24 — Swap Nodes in Pairs
+
+**Problem:** Given the head of a singly linked list, swap every two adjacent **nodes** and return the new head. Do not swap node values.
+
+**Example:** `1 → 2 → 3 → 4 → 5 → null` becomes `2 → 1 → 4 → 3 → 5 → null`.
+
+**Pattern:** Linked-list pointer manipulation · Pairwise reversal · Dummy node (cleaner solution)
+
+## 1. Initial attempt — what I learned
+
+My `swapPair(first, second)` helper correctly reversed one pair:
+
+```java
+public void swapPair(ListNode first, ListNode second) {
+    ListNode nextPair = second.next;
+    second.next = first;
+    first.next = nextPair;
+}
+```
+
+But a working solution needs **three separate jobs**:
+
+1. Swap references **inside** the pair.
+2. Connect the **previous swapped pair's tail** to the new pair's head.
+3. Advance to the **next unswapped pair**.
+
+Originally, I handled job 1 but missed job 2. After swapping `(3,4)`, node `1` still pointed to `3` instead of `4`.
+
+**Reference lesson:** `previousTail.next = current.next` changes the `next` field belonging to `previousTail`. It does **not** change `current.next`, because these are fields on different node objects. Also, `previousTail = current` only reassigns a local variable; it does not modify the linked list.
+
+## 2. Brute force — collect node references in an array
+
+Store **node references**, not values; swap each adjacent pair in the array; then reconnect all the nodes in array order. This obeys the requirement not to swap node values, but costs extra memory.
+
+```java
+import java.util.ArrayList;
+import java.util.List;
+
+class Solution {
+    public ListNode swapPairs(ListNode head) {
+        if (head == null || head.next == null) return head;
+
+        List<ListNode> nodes = new ArrayList<>();
+        for (ListNode curr = head; curr != null; curr = curr.next) {
+            nodes.add(curr);
+        }
+
+        for (int i = 0; i + 1 < nodes.size(); i += 2) {
+            ListNode temp = nodes.get(i);
+            nodes.set(i, nodes.get(i + 1));
+            nodes.set(i + 1, temp);
+        }
+
+        for (int i = 0; i + 1 < nodes.size(); i++) {
+            nodes.get(i).next = nodes.get(i + 1);
+        }
+        nodes.get(nodes.size() - 1).next = null;
+        return nodes.get(0);
+    }
+}
+```
+
+- **Time:** O(n) — collect, swap pairs, reconnect.
+- **Auxiliary space:** O(n) — array of node references.
+- **Learning:** Easier reasoning, but uses extra space; nodes themselves are reused.
+
+## 3. My iterative approach — corrected version
+
+This stays closest to my own solution: keep `previousTail`, skip the first connection, and use the pair-swapping helper.
+
+```java
+class Solution {
+    private void swapPair(ListNode oddPosition, ListNode evenPosition) {
+        ListNode nextPair = evenPosition.next;
+        evenPosition.next = oddPosition;
+        oddPosition.next = nextPair;
+    }
+
+    public ListNode swapPairs(ListNode head) {
+        if (head == null || head.next == null) return head;
+
+        ListNode current = head;
+        ListNode result = head.next;
+        ListNode previousTail = null;
+
+        while (current != null && current.next != null) {
+            // Connect the previous pair to the new head of this pair.
+            if (previousTail != null) {
+                previousTail.next = current.next;
+            }
+
+            swapPair(current, current.next);
+
+            // The old first node is now the tail of this pair.
+            previousTail = current;
+            current = current.next;
+        }
+        return result;
+    }
+}
+```
+
+- **Time:** O(n) — each pair is processed once.
+- **Auxiliary space:** O(1) — only a few references.
+- **Learning:** My logic works; replacing `notFirstTime` with `previousTail != null` removes an unnecessary boolean.
+
+### Why the ordering matters
+
+Before swapping `(3,4)`, the list's first part is `2 → 1 → 3 → 4 → 5`:
+
+```text
+previousTail = node 1
+current      = node 3
+current.next = node 4
+
+previousTail.next = current.next;  // 1.next = 4
+swapPair(current, current.next);    // 4.next = 3; 3.next = 5
+previousTail = current;             // tail becomes node 3
+current = current.next;             // moves to node 5
+```
+
+Connecting before the swap works because `current.next` still points to the second node, which will become the pair's new head.
+
+## 4. Clean optimal solution — dummy node
+
+This is the **more interview-friendly** version. A dummy node gives every pair a preceding node, including the first pair, so no `result`, first-iteration flag, or helper is needed.
+
+```java
+class Solution {
+    public ListNode swapPairs(ListNode head) {
+        ListNode dummy = new ListNode(0, head);
+        ListNode prev = dummy;
+
+        while (prev.next != null && prev.next.next != null) {
+            ListNode first = prev.next;
+            ListNode second = first.next;
+
+            first.next = second.next; // 1 → 3 (preserve rest)
+            second.next = first;      // 2 → 1
+            prev.next = second;       // dummy/previous tail → 2
+
+            prev = first;             // old first is new pair tail
+        }
+        return dummy.next;
+    }
+}
+```
+
+- **Time:** O(n).
+- **Auxiliary space:** O(1) — one dummy node plus references (constant space).
+- **Why cleaner:** `prev` always points to the node **before** the current pair, so the same logic works for the first and all later pairs.
+
+### Dry run — `1 → 2 → 3 → 4 → 5`
+
+| Iteration | `prev` before | `first` | `second` | List after swap | `prev` after |
+|---|---|---|---|---|---|
+| 1 | dummy | 1 | 2 | `dummy → 2 → 1 → 3 → 4 → 5` | 1 |
+| 2 | 1 | 3 | 4 | `dummy → 2 → 1 → 4 → 3 → 5` | 3 |
+| Stop | 3 | 5 | null | Only one node remains | — |
+
+### How to remember the three assignments
+
+1. **Preserve rest:** `first.next = second.next`.
+2. **Reverse pair:** `second.next = first`.
+3. **Attach pair:** `prev.next = second`.
+4. **Advance:** `prev = first` (because `first` became the tail).
+
+## 5. Comparison
+
+| Approach | Time | Auxiliary space | Main idea |
+|---|---|---|---|
+| Brute force: array of node references | O(n) | O(n) | Rearrange references in array, then reconnect |
+| My corrected helper + previous tail | O(n) | O(1) | Swap each pair, connect previous pair, advance |
+| Clean optimal: dummy node | O(n) | O(1) | `prev` anchors every pair; three link updates |
+
+## 6. One-paragraph takeaway
+
+I could swap two adjacent nodes correctly, but initially failed to connect successive swapped pairs. I learned that changing `previousTail.next` does not change `current.next`: every node owns its own `next` field, and reassigning a local reference is different from rewiring a link. My O(1)-space solution works by connecting the previous tail to the second node **before** swapping, then moving to the next pair. The dummy-node version simplifies this further because `prev` consistently represents the node before the current pair, eliminating first-pair special cases.
+
+## 7. Excel tracker takeaway (short)
+
+**Pattern:** Linked-list reference manipulation / pair swapping / dummy node  
+**Takeaway:** Initially swapped each pair but missed connecting consecutive pairs. Learned that `prev.next` and `current.next` are independent fields; link the previous tail to the new pair head before rewiring. Dummy node removes first-pair special cases. **TC O(n), SC O(1)** optimal.
