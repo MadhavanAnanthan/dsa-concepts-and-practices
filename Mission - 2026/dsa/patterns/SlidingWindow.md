@@ -440,3 +440,104 @@ To find the longest substring without repeating characters, I first used nested 
 ### One-Liner for Excel Tracker
 
 **Longest unique substring → variable sliding window:** Brute force repeats scans O(n²); HashSet shrinks from `left` until duplicate removed; HashMap stores last-seen index and jumps using `Math.max(left, prev + 1)` because stale entries remain. Both optimized approaches: **O(n) time, O(min(n, alphabet)) space**.
+
+# 424. Longest Repeating Character Replacement
+
+**Problem:** Given an uppercase string `s` and an integer `k`, find the length of the longest contiguous substring that can be made of the same character by replacing at most `k` characters.
+
+## Core observation
+
+Don't assume the character at the starting index must be preserved. Within any substring, preserve the **most frequent character** and replace the others.
+
+```text
+replacementsRequired = windowLength - maxFreq
+Valid when replacementsRequired <= k
+```
+
+Relative order does not affect the number of replacements within a *fixed contiguous substring*.
+
+## Approach 1 — Brute Force (two loops + frequency)
+
+```java
+class Solution {
+    public int characterReplacement(String s, int k) {
+        int longest = 0;
+
+        for (int outer = 0; outer < s.length(); outer++) {
+            int[] freq = new int[26];
+            int maxFreq = 0;
+
+            for (int inner = outer; inner < s.length(); inner++) {
+                int index = s.charAt(inner) - 'A';
+                freq[index]++;
+                maxFreq = Math.max(maxFreq, freq[index]);
+
+                int windowLength = inner - outer + 1;
+                int replacementsRequired = windowLength - maxFreq;
+
+                if (replacementsRequired <= k) {
+                    longest = Math.max(longest, windowLength);
+                } else {
+                    break;
+                }
+            }
+        }
+        return longest;
+    }
+}
+```
+
+**How it works:** `outer` fixes the start; `inner` extends the substring. Keep its frequency counts and highest frequency incrementally. If it needs more than `k` replacements, stop extending this start position: adding characters cannot reduce the minimum replacements needed.
+
+- **TC:** `O(n²)` — two nested loops.
+- **SC:** `O(1)` — 26-character frequency array, reused per outer iteration.
+
+## Approach 2 — My optimized sliding window (single `if` shrink)
+
+```java
+class Solution {
+    public int characterReplacement(String s, int k) {
+        int longest = 0;
+        int[] freq = new int[26];
+        int maxFreq = 0;
+        int left = 0;
+
+        for (int inner = 0; inner < s.length(); inner++) {
+            int index = s.charAt(inner) - 'A';
+            freq[index]++;
+            maxFreq = Math.max(maxFreq, freq[index]);
+
+            int windowLength = inner - left + 1;
+            int replacementsRequired = windowLength - maxFreq;
+
+            if (replacementsRequired <= k) {
+                longest = Math.max(longest, windowLength);
+            } else {
+                freq[s.charAt(left) - 'A']--;
+                left++;
+                continue;
+            }
+        }
+        return longest;
+    }
+}
+```
+
+**How it works:** Instead of restarting at every index, keep a window between `left` and `inner`. Expand right one character at a time. If the tracked replacement count exceeds `k`, remove one leftmost character and advance `left`. A single `if` is sufficient **for this problem** because each expansion can increase the required replacement count by at most 1.
+
+- **TC:** `O(n)` — right advances `n` times; left advances at most `n` times.
+- **SC:** `O(1)` — fixed 26-character frequency array.
+
+**Subtle point:** `maxFreq` is not decremented when `left` moves. It may become *stale* (larger than the true current-window frequency). This is intentional: the algorithm still finds the correct maximum length, although a particular intermediate window might not be genuinely valid. Don't generalize the single-`if` shrink or stale maximum to every sliding-window problem.
+
+## Dry run: `s = "BAAAB", k = 1`
+
+For a substring `"BAAA"`: frequencies are `A: 3, B: 1`; length = 4, max frequency = 3, replacements = `4 - 3 = 1`. Answer = **4**.
+
+## My takeaway (learning journey)
+
+Initially, I compared each character only with the character at the outer-loop starting index. This fails because the best character to **keep** is not necessarily the starting character; we should keep whichever character appears most frequently in the current substring and replace the others. With AI guidance, I learned to maintain a frequency array and calculate `replacementsRequired = windowLength - maxFreq`. In my brute-force approach, I used two loops: expand the substring and update `longest` when `replacementsRequired <= k`; otherwise, break and try the next starting index. Since that approach is **O(n²)**, it can lead to TLE for large inputs. I then optimized it to **O(n)** using a sliding window: add the new rightmost character to the frequency count and, when the tracked window exceeds the replacement limit, decrement the frequency of the outgoing leftmost character and move `left` forward by one. This avoids repeatedly starting over and recalculating frequencies for overlapping substrings.
+
+**Key formula:** `windowLength - maxFreq <= k`.
+
+**Important nuance:** `maxFreq` is deliberately not reduced when shrinking the window, so it can be stale. The algorithm still computes the correct longest length. Shrinking just once with `if` is valid here, but not for every sliding-window problem.
